@@ -15,7 +15,7 @@ class Products(models.Model):
 class Technology(models.Model):
     name = models.CharField(max_length=50)
     production_time_h = models.FloatField()
-    recipe = models.CharField()
+    recipe = models.CharField(max_length=100)
 
 
 class Stock(models.Model):
@@ -64,7 +64,7 @@ class Orders(models.Model):
     quantity = models.FloatField()
     price = models.FloatField()
     total_amount = models.FloatField()
-    delivery_method = models.CharField()
+    delivery_method = models.CharField(max_length=15)
     dead_line = models.DateField()
 
 
@@ -72,9 +72,9 @@ class Clients(models.Model):
     cid = models.IntegerField
     is_company = models.BooleanField()
     contact = models.IntegerField(max_length=12)
-    name = models.CharField()
+    name = models.CharField(max_length=60)
     nip = models.IntegerField()
-    address = models.CharField()
+    address = models.CharField(max_length=60)
 
 
 
