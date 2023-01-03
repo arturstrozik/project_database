@@ -10,6 +10,7 @@ class Products(models.Model):
     poss_in_stock = models.IntegerField()
     serial_number = models.DateTimeField()
     expiration_date = models.DateTimeField()
+    price = models.IntegerField()
 
 
 class Technology(models.Model):
@@ -54,7 +55,7 @@ class Suppliers(models.Model):
     sid = models.IntegerField(unique=True)
     name = models.CharField(max_length=50, unique=True)
     nip = models.IntegerField(unique=True)
-    contact = models.IntegerField(max_length=12)
+    contact = models.CharField(max_length=12)
     bank_account = models.IntegerField()
 
 
@@ -71,7 +72,7 @@ class Orders(models.Model):
 class Clients(models.Model):
     cid = models.IntegerField
     is_company = models.BooleanField()
-    contact = models.IntegerField(max_length=12)
+    contact = models.CharField(max_length=12)
     name = models.CharField(max_length=60)
     nip = models.IntegerField()
     address = models.CharField(max_length=60)
