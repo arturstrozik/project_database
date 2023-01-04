@@ -65,7 +65,7 @@ class Orders(models.Model):
     price = models.FloatField()
     total_amount = models.FloatField()
     delivery_method = models.CharField(max_length=15)
-    dead_line = models.DateField()
+    dead_line = models.DateTimeField()
 
 
 class Clients(models.Model):
