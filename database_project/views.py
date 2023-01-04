@@ -33,3 +33,24 @@ def new_order(request):
     else:
         form = NewOrderForm()
         return render(request, "new_order.html",  {"form": form})
+
+
+def stock(request):
+    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = [], [], [], [], [], [], [], []
+    all = ()
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT id, poss, item_id, quantity, placement_time, placer, expiration_date, is_product FROM database_project_stock ORDER BY id")
+        for row in cursor.fetchall():
+            ids = ids.append(row[0])
+            poss = poss.append(row[1])
+            item_ids = item_ids.append(row[2])
+            quantitys = quantitys.append(row[3])
+            placement_times = placement_times.append(row[4])
+            placers = placers.append(row[5])
+            exp_dates = exp_dates.append(row[6])
+            is_products = is_products.append(row[7])
+            all = all + (row,)
+    context = {
+        "all": all,
+    }
+    return render(request, "stock.html", context)

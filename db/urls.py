@@ -21,5 +21,6 @@ import database_project.views
 urlpatterns = [
     path('', database_project.views.home),
     path('admin/', admin.site.urls),
-    path('new_order/', database_project.views.new_order, name="new_order")
+    path('new_order/', database_project.views.new_order, name="new_order"),
+    path('stock/', database_project.views.stock, name="stock"),
 ]

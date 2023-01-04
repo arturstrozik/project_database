@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="col-md-auto mt-5">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>pozycja</th>
+                <th>ID przedmiotu</th>
+                <th>ilość w magazynie</th>
+                <th>czas złożenia w magazynie</th>
+                <th>magazynier</th>
+                <th>termina ważności</th>
+                <th>czy produkt</th>
+            </tr>
+            {% for row in all %}
+                <tr>
+                {% for element in row %}
+                    <td>
+                        {{ element }}
+                    </td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
