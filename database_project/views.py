@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.shortcuts import redirect
 
@@ -13,6 +14,12 @@ def home(request):
 def new_order(request):
     if request.method == "POST":
         client_id = request.POST.get("client_id")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM database_project_clients where id = '{0}'".format(str(client_id)))
+            client = cursor.fetchone()
+        if not client:
+            form = NewOrderForm()
+            return render(request, "new_order.html", {"form": form})
         data = datetime.datetime.now()
         product = request.POST.get("product")
         quantity = request.POST.get("quantity")
@@ -35,6 +42,7 @@ def new_order(request):
         return render(request, "new_order.html",  {"form": form})
 
 
+@login_required
 def stock(request):
     ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = [], [], [], [], [], [], [], []
     all = ()
