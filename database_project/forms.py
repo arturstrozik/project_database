@@ -15,17 +15,19 @@ class NewOrderForm(forms.Form):
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Szukaj"))
 
-    client_id = forms.IntegerField(label="Twoje ID")
-    quantity = forms.FloatField(label="Podaj ilość")
+    client_id = forms.IntegerField(label="Twoje ID", min_value=0)
+    quantity = forms.FloatField(label="Podaj ilość", min_value=0)
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT name, name FROM database_project_products")
+        cursor.execute("SELECT name, price, unit FROM database_project_products")
         product_list = cursor.fetchall()
-
-    PRODUCT_CHOICE = tuple(product_list)
+    product_tuple = ()
+    for row in product_list:
+        product_tuple = product_tuple + ((str(row[0]), str(row[0]) + " " + str(row[1]) + "zł/" + str(row[2])),)
+    PRODUCT_CHOICE = tuple(product_tuple)
     product = forms.ChoiceField(
         choices=PRODUCT_CHOICE,
-        label="Produkt"
+        label="Produkt",
     )
 
     DELIVERY_CHOICE = (

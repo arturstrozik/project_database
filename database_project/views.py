@@ -18,9 +18,10 @@ def new_order(request):
         quantity = request.POST.get("quantity")
         delivery = request.POST.get("delivery")
         with connection.cursor() as cursor:
-            cursor.execute("SELECT id, price FROM database_project_products where name = {0}".format(product))
-            product_id = cursor.fetchone()[0]
-            price = cursor.fetchone()[1]
+            cursor.execute("SELECT pid, price FROM database_project_products where name = '{0}'".format(str(product)))
+            row = cursor.fetchone()
+            product_id = row[0]
+            price = row[1]
         sum_price = float(quantity) * float(price)
         time_change = datetime.timedelta(days=7)
         dead_line = data + time_change

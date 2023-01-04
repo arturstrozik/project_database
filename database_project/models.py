@@ -7,9 +7,8 @@ class Products(models.Model):
     name = models.CharField(max_length=30)
     quantity_in_stock = models.IntegerField(default=0)
     unit = models.CharField(max_length=5)
-    poss_in_stock = models.IntegerField()
     serial_number = models.DateTimeField()
-    expiration_date = models.DateTimeField()
+    expiration_date_in_days = models.PositiveIntegerField()
     price = models.IntegerField()
 
 
