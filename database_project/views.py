@@ -28,7 +28,7 @@ def new_order(request):
 
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line) "
-                           "VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})".format(client_id, product_id, quantity, price, sum_price, delivery, dead_line))
+                           "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}')".format(client_id, product_id, quantity, price, sum_price, delivery, dead_line))
         return redirect("/")
     else:
         form = NewOrderForm()
