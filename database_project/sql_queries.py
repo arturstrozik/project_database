@@ -1,29 +1,6 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
 from django.db import connection
 import traceback
 import datetime
-
-
-# Create your views here.
-from database_project.models import Clients
-
-
-def home(request):
-    # p = Clients.objects.raw('SELECT * FROM database_project_clients')
-    # print(Clients.objects.raw('SELECT id FROM database_project_clients WHERE name=%s', ['asdc']))
-    # for p in Clients.objects.raw('SELECT id FROM database_project_clients WHERE name= %s', ['asdc']):
-    #    print(p)
-
-    # insert_client(False, "000111222", "Max", 111111111, "kolanko")
-    #insert_product(4, "boczek", 1, "kg", 1, 21)
-    #insert_nutritionalvalues(1, 1, 1, 1, 12, 12, 12, 4)
-    #insert_rawmaterials(1, "miencho", 1, "kg", 1)
-    #insert_technology("kiełbasa", 0.5, "podroby")
-    #insert_supplier(1, "abc", 123123, "mięsna 17", 1234567899)
-    insert_stock(1, 1, 2, "abc", 10, True)
-
-    return render(request, "base.html")
 
 
 def insert_client(is_company: bool, contact: str, name: str, nip: int, address: str):
@@ -157,7 +134,7 @@ def insert_stock(poss: int, item_id: int, quantity: float, placer: str, expirati
         try:
             cursor.execute(sql, val)
         except:
-            print("Error - insert_product function")
+            print("Error - insert_stock function")
             traceback.print_exc()
 
 
