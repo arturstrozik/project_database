@@ -17,10 +17,15 @@ from django.contrib import admin
 from django.urls import path
 
 import database_project.views
+from database_project import views as db_views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', database_project.views.home),
     path('admin/', admin.site.urls),
     path('new_order/', database_project.views.new_order, name="new_order"),
     path('stock/', database_project.views.stock, name="stock"),
+    path("login/", auth_views.LoginView.as_view(), name="login"),
+    path("register/", db_views.register, name="register"),
+    path("logout/", auth_views.logout_then_login, name="logout"),
 ]

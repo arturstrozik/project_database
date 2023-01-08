@@ -5,6 +5,9 @@ from django.urls import reverse
 
 import database_project.models
 from django.db import connection
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
+from .models import User
 
 
 class NewOrderForm(forms.Form):
@@ -40,3 +43,24 @@ class NewOrderForm(forms.Form):
         label="Metoda dostawy",
     )
 
+
+get_user_model()
+
+
+class SignUpForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = True
+        self.fields["first_name"].required = True
+        self.fields["last_name"].required = True
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password1",
+            "password2",
+        )

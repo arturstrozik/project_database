@@ -1,4 +1,6 @@
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 
 
 class Products(models.Model):
@@ -69,7 +71,7 @@ class Orders(models.Model):
 
 
 class Clients(models.Model):
-    cid = models.IntegerField
+    cid = models.IntegerField()
     is_company = models.BooleanField()
     contact = models.CharField(max_length=12)
     name = models.CharField(max_length=60)
@@ -77,4 +79,5 @@ class Clients(models.Model):
     address = models.CharField(max_length=60)
 
 
-
+class User(AbstractUser):
+    role = models.IntegerField(default=1)

@@ -1,10 +1,24 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render
 from django.shortcuts import redirect
 
 from django.db import connection
 import datetime
-from .forms import NewOrderForm
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+
+from .forms import NewOrderForm, SignUpForm
+from django.views.generic.edit import FormView
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
 
 
 def home(request):
@@ -62,3 +76,31 @@ def stock(request):
         "all": all,
     }
     return render(request, "stock.html", context)
+
+
+
+
+
+def register(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        print("jest POST")
+        if form.is_valid():
+            print("jest valid")
+            user = form.save()
+            user.refresh_from_db()
+            user.is_active = True
+            user.first_name = form.cleaned_data.get("first_name")
+            user.last_surname = form.cleaned_data.get("last_name")
+            user.email = form.cleaned_data.get("email")
+            print(user.email)
+            user.save()
+            current_site = get_current_site(request)
+
+            return render(request, "registration/confirm.html", {'foo': 'bar'})
+        else:
+            form = form
+            return render(request, "registration/register.html", {"form": form})
+    else:
+        form = SignUpForm()
+        return render(request, "registration/register.html", {"form": form})
