@@ -73,10 +73,10 @@ class ChangeStockForm(forms.Form):
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Potwierdź"))
 
-    poss = forms.IntegerField()
-    item_id = forms.IntegerField()
-    quantity = forms.FloatField()
-    placement_time = forms.DateTimeField(initial=datetime.now())
-    placer = forms.CharField(max_length=30)
-    expiration_date = forms.DateTimeField()
-    is_product = forms.BooleanField()
+    poss = forms.IntegerField(label="Pozycja w magazynie")
+    item_id = forms.IntegerField(label="Numer ID towaru")
+    quantity = forms.FloatField(label="Ilość towaru")
+    placement_time = forms.DateTimeField(initial=datetime.now(), label="Czas złożenia towaru w magazynie")
+    placer = forms.CharField(max_length=30, label="Magazynier")
+    expiration_date = forms.DateTimeField(label="Ważność towaru/do kiedy może być składowany")
+    is_product = forms.BooleanField(label="Towar jest produktem końcowym")

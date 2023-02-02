@@ -120,4 +120,5 @@ def change_stock(request):
     form = ChangeStockForm()
     form.fields["placer"].initial = request.user.username
     form.fields["placer"].disabled = True
+    form.fields["placement_time"].disabled = True
     return render(request, "change_stock.html", {"form": form})
