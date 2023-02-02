@@ -11,7 +11,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm
+from .forms import NewOrderForm, SignUpForm, ChangeStockForm
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -63,7 +63,6 @@ def stock(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT poss, item_id, quantity, placement_time, placer, expiration_date, is_product FROM database_project_stock ORDER BY poss")
         for row in cursor.fetchall():
-            #ids = ids.append(row[0])
             poss = poss.append(row[0])
             item_ids = item_ids.append(row[1])
             quantitys = quantitys.append(row[2])
@@ -101,3 +100,15 @@ def register(request):
     else:
         form = SignUpForm()
         return render(request, "registration/register.html", {"form": form})
+
+
+@login_required
+def change_stock(request):
+    if request.method == "POST":
+        form = ChangeStockForm()
+        if form.is_valid():
+            return render(request, "change_stock.html", {"form": form})
+    form = ChangeStockForm()
+    form.fields["placer"].initial = request.user.username
+    form.fields["placer"].disabled = True
+    return render(request, "change_stock.html", {"form": form})

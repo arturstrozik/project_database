@@ -24,7 +24,7 @@ class Stock(models.Model):
     poss = models.IntegerField(primary_key=True)
     item_id = models.IntegerField()
     quantity = models.FloatField(default=0)
-    placement_time = models.DateField()
+    placement_time = models.DateTimeField()
     placer = models.CharField(max_length=30)
     expiration_date = models.DateTimeField()
     # is_product - we can differentiate products id and raw materials id

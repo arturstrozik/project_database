@@ -2,11 +2,10 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <div class="col-md-auto mt-5">
+    <div class="col-md-12 mt-5">
         {% csrf_token %}
         <table>
             <tr>
-                <th>ID</th>
                 <th>pozycja</th>
                 <th>ID przedmiotu</th>
                 <th>ilość w magazynie</th>
@@ -22,7 +21,7 @@
                         {{ element }}
                     </td>
                 {% endfor %}
-                <td><button type="button">Zmień</button></td>
+                <td><a href="{% url 'change_stock' %}" class="button" >Zmień</a></td>
                 </tr>
             {% endfor %}
         </table>

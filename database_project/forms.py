@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
@@ -61,3 +63,20 @@ class SignUpForm(UserCreationForm):
             "password1",
             "password2",
         )
+
+
+class ChangeStockForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_action = reverse("change_stock")
+        self.helper.form_method = "POST"
+        self.helper.add_input(Submit("submit", "Potwierdź"))
+
+    poss = forms.IntegerField()
+    item_id = forms.IntegerField()
+    quantity = forms.FloatField()
+    placement_time = forms.DateTimeField(initial=datetime.now())
+    placer = forms.CharField(max_length=30)
+    expiration_date = forms.DateTimeField()
+    is_product = forms.BooleanField()
