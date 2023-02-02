@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser, PermissionsMixin
 
 class Products(models.Model):
     # product id
-    pid = models.IntegerField(unique=True)
+    pid = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=30)
     quantity_in_stock = models.IntegerField(default=0)
     unit = models.CharField(max_length=5)
@@ -21,7 +21,7 @@ class Technology(models.Model):
 
 
 class Stock(models.Model):
-    poss = models.IntegerField()
+    poss = models.IntegerField(primary_key=True)
     item_id = models.IntegerField()
     quantity = models.FloatField(default=0)
     placement_time = models.DateField()
@@ -44,7 +44,7 @@ class NutritionalValues(models.Model):
 
 class RawMaterials(models.Model):
     # raw material id
-    rmid = models.IntegerField(unique=True)
+    rmid = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=40)
     quantity_in_stock = models.IntegerField(default=0)
     unit = models.CharField(max_length=5)
@@ -53,7 +53,7 @@ class RawMaterials(models.Model):
 
 
 class Suppliers(models.Model):
-    sid = models.IntegerField(unique=True)
+    sid = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=50, unique=True)
     nip = models.IntegerField(unique=True)
     contact = models.CharField(max_length=12)
@@ -71,7 +71,7 @@ class Orders(models.Model):
 
 
 class Clients(models.Model):
-    cid = models.IntegerField()
+    cid = models.IntegerField(primary_key=True)
     is_company = models.BooleanField()
     contact = models.CharField(max_length=12)
     name = models.CharField(max_length=60)
