@@ -5,15 +5,15 @@
 {% block content %}
   <h2>Log in</h2>
   {% if form.errors %}
-    <p style="color: red">Your username and password didn't match. Please try again.</p>
+    <p style="color: red">Nazwa użytkownika lub hasło nie pasują. Spróbuj jeszcze raz</p>
   {% endif %}
   <form method="post">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}" />
       {{ form|crispy }}
     <div class="text-center">
-      <button type="submit" class="btn btn-success btn-lg">Log in</button>
-      <a href="{% url 'register' %}" class="btn btn-primary btn-lg" role="button">Register</a>
+      <button type="submit" class="btn btn-success btn-lg">Zaloguj</button>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg" role="button">Zarejestruj</a>
     </div>
   </form>
 

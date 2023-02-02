@@ -2,7 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render
 from django.shortcuts import redirect
-
+from django.contrib.auth import logout
+from django.contrib import messages
 from django.db import connection
 import datetime
 
@@ -93,13 +94,21 @@ def register(request):
             user.save()
             current_site = get_current_site(request)
 
-            return render(request, "registration/confirm.html", {'foo': 'bar'})
+            #return render(request, "registration/confirm.html", {'foo': 'bar'})
+            messages.success(request, "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować")
+            return redirect('home')
         else:
             form = form
             return render(request, "registration/register.html", {"form": form})
     else:
         form = SignUpForm()
         return render(request, "registration/register.html", {"form": form})
+
+
+def logout_user(request):
+    logout(request)
+    messages.success(request, "Następiło poprawne wylogowanie")
+    return redirect('home')
 
 
 @login_required
