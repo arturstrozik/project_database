@@ -103,13 +103,13 @@ def stock(request):
             "FROM database_project_stock ORDER BY poss"
         )
         for row in cursor.fetchall():
-            poss = poss.append(row[0])
-            item_ids = item_ids.append(row[1])
-            quantitys = quantitys.append(row[2])
-            placement_times = placement_times.append(row[3])
-            placers = placers.append(row[4])
-            exp_dates = exp_dates.append(row[5])
-            is_products = is_products.append(row[6])
+            poss.append(row[0])
+            item_ids.append(row[1])
+            quantitys.append(row[2])
+            placement_times.append(row[3])
+            placers.append(row[4])
+            exp_dates.append(row[5])
+            is_products.append(row[6])
             all = all + (row,)
     context = {
         "all": all,
