@@ -41,9 +41,12 @@
                                                  class="d-inline-block align-text-bottom"/>
                                             {{ user.username }}
                                         </button>
-                                        <ul class="dropdown-menu">
-
-                                        </ul>
+                                        {% if user.role == 3 %}
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'orders' %}">Zamówienia</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'add_product' %}">Nowy produkt</a></li>
+                                            </ul>
+                                        {% endif %}
                                     </div>
                                 </li>
                                 <li class="nav-item px-1">
