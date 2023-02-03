@@ -69,6 +69,7 @@ class Orders(models.Model):
     total_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     delivery_method = models.CharField(max_length=15)
     dead_line = models.DateTimeField()
+    is_done = models.BooleanField()
 
 
 class Clients(models.Model):
@@ -81,4 +82,7 @@ class Clients(models.Model):
 
 
 class User(AbstractUser):
+    # role 1 - client, normal user
+    # role 2 - deliver
+    # role 3 - worker
     role = models.IntegerField(default=1)
