@@ -22,13 +22,13 @@ from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
-    path('', database_project.views.home, name='home'),
-    path('home/', database_project.views.home, name='home'),
-    path('admin/', admin.site.urls),
-    path('new_order/', database_project.views.new_order, name="new_order"),
-    path('stock/', database_project.views.stock, name="stock"),
+    path("", database_project.views.home, name="home"),
+    path("home/", database_project.views.home, name="home"),
+    path("admin/", admin.site.urls),
+    path("new_order/", database_project.views.new_order, name="new_order"),
+    path("stock/", database_project.views.stock, name="stock"),
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("register/", db_views.register, name="register"),
     path("logout/", database_project.views.logout_user, name="logout"),
-    path("change_stock/", database_project.views.change_stock, name="change_stock")
+    path("change_stock/", database_project.views.change_stock, name="change_stock"),
 ]

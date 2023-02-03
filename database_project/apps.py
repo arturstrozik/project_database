@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class DatabaseProjectConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'database_project'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "database_project"

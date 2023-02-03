@@ -21,7 +21,12 @@
                         {{ element }}
                     </td>
                 {% endfor %}
-                <td><a href="{% url 'change_stock' %}" class="button" >Zmień</a></td>
+                <td>
+                     <form action="{% url 'change_stock' %}" method="get" class="mb-2">
+                        <button class="btn btn-secondary fs-5" type="submit"
+                                name="possition" value="{{ row.0 }}">Zmień</button>
+                    </form>
+                </td>
                 </tr>
             {% endfor %}
         </table>

@@ -30,7 +30,11 @@ def new_order(request):
     if request.method == "POST":
         client_id = request.POST.get("client_id")
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM database_project_clients where id = '{0}'".format(str(client_id)))
+            cursor.execute(
+                "SELECT * FROM database_project_clients where id = '{0}'".format(
+                    str(client_id)
+                )
+            )
             client = cursor.fetchone()
         if not client:
             form = NewOrderForm()
@@ -40,7 +44,11 @@ def new_order(request):
         quantity = request.POST.get("quantity")
         delivery = request.POST.get("delivery")
         with connection.cursor() as cursor:
-            cursor.execute("SELECT pid, price FROM database_project_products where name = '{0}'".format(str(product)))
+            cursor.execute(
+                "SELECT pid, price FROM database_project_products where name = '{0}'".format(
+                    str(product)
+                )
+            )
             row = cursor.fetchone()
             product_id = row[0]
             price = row[1]
@@ -49,20 +57,42 @@ def new_order(request):
         dead_line = data + time_change
 
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line) "
-                           "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}')".format(client_id, product_id, quantity, price, sum_price, delivery, dead_line))
+            cursor.execute(
+                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line) "
+                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}')".format(
+                    client_id,
+                    product_id,
+                    quantity,
+                    price,
+                    sum_price,
+                    delivery,
+                    dead_line,
+                )
+            )
         return redirect("/")
     else:
         form = NewOrderForm()
-        return render(request, "new_order.html",  {"form": form})
+        return render(request, "new_order.html", {"form": form})
 
 
 @login_required
 def stock(request):
-    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = [], [], [], [], [], [], [], []
+    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = (
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    )
     all = ()
     with connection.cursor() as cursor:
-        cursor.execute("SELECT poss, item_id, quantity, placement_time, placer, expiration_date, is_product FROM database_project_stock ORDER BY poss")
+        cursor.execute(
+            "SELECT poss, item_id, quantity, placement_time, placer, expiration_date, is_product "
+            "FROM database_project_stock ORDER BY poss"
+        )
         for row in cursor.fetchall():
             poss = poss.append(row[0])
             item_ids = item_ids.append(row[1])
@@ -94,9 +124,12 @@ def register(request):
             user.save()
             current_site = get_current_site(request)
 
-            #return render(request, "registration/confirm.html", {'foo': 'bar'})
-            messages.success(request, "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować")
-            return redirect('home')
+            # return render(request, "registration/confirm.html", {'foo': 'bar'})
+            messages.success(
+                request,
+                "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować",
+            )
+            return redirect("home")
         else:
             form = form
             return render(request, "registration/register.html", {"form": form})
@@ -108,17 +141,47 @@ def register(request):
 def logout_user(request):
     logout(request)
     messages.success(request, "Następiło poprawne wylogowanie")
-    return redirect('home')
+    return redirect("home")
 
 
 @login_required
 def change_stock(request):
-    if request.method == "POST":
-        form = ChangeStockForm()
-        if form.is_valid():
-            return render(request, "change_stock.html", {"form": form})
+    if not request.user.is_staff:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
+    if request.method == "GET":
+        try:
+            form.fields["poss"].initial = request.GET["possition"]
+            form.fields["poss"].disabled = True
+        except KeyError:
+            pass
+    if request.method == "POST":
+        poss = request.GET["possition"]
+        item_id = request.POST["item_id"]
+        quantity = request.POST["quantity"]
+        placement_time = request.POST["placement_time"]
+        placer = request.user.username
+        expiration_date = request.POST["expiration_date"]
+        try:
+            is_product = request.POST["is_product"]
+        except KeyError:
+            is_product = False
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE database_project_stock set item_id=%s, quantity=%s, placement_time=%s, placer=%s, expiration_date=%s, is_product=%s where poss=%s",
+                [
+                    item_id,
+                    quantity,
+                    placement_time,
+                    placer,
+                    expiration_date,
+                    str(is_product),
+                    poss,
+                ],
+            )
+        return redirect(request, "stock")
     form.fields["placer"].initial = request.user.username
     form.fields["placer"].disabled = True
-    form.fields["placement_time"].disabled = True
     return render(request, "change_stock.html", {"form": form})
