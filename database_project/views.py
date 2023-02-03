@@ -117,6 +117,40 @@ def stock(request):
     return render(request, "stock.html", context)
 
 
+@login_required
+def orders(request):
+    ids, cids, pids, quantitys, prices, total_amounts, delivery_methods, dead_lines  = (
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    )
+    all = ()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line "
+            "FROM database_project_orders ORDER BY id"
+        )
+        for row in cursor.fetchall():
+            ids.append(row[0])
+            cids.append(row[1])
+            pids.append(row[2])
+            quantitys.append(row[3])
+            prices.append(row[4])
+            total_amounts.append(row[5])
+            delivery_methods.append(row[6])
+            dead_lines.append(row[7])
+            all = all + (row,)
+    context = {
+        "all": all,
+    }
+    return render(request, "orders.html", context)
+
+
 def register(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="col-md-12 mt-5">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>ID zamówienia</th>
+                <th>ID klienta</th>
+                <th>ID produktu</th>
+                <th>Ilość</th>
+                <th>Cena/jednostkę</th>
+                <th>Cena całkowita</th>
+                <th>Sposób dostawy</th>
+                <th>Deadline</th>
+            </tr>
+            {% for row in all %}
+                <tr>
+                {% for element in row %}
+                    <td>
+                        {{ element }}
+                    </td>
+                {% endfor %}
+                <td>
+                     <form action="{% url 'change_stock' %}" method="get" class="mb-2">
+                        <button class="btn btn-secondary fs-5" type="submit"
+                                name="possition" value="{{ row.0 }}">Zmień</button>
+                    </form>
+                </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
