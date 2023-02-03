@@ -6,13 +6,13 @@
         {% csrf_token %}
         <table>
             <tr>
-                <th>pozycja</th>
+                <th>Pozycja</th>
                 <th>ID przedmiotu</th>
-                <th>ilość w magazynie</th>
-                <th>czas złożenia w magazynie</th>
-                <th>magazynier</th>
-                <th>termina ważności</th>
-                <th>czy produkt</th>
+                <th>Ilość w magazynie</th>
+                <th>Czas złożenia w magazynie</th>
+                <th>Magazynier</th>
+                <th>Termina ważności</th>
+                <th>Czy produkt</th>
             </tr>
             {% for row in all %}
                 <tr>
