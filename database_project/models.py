@@ -8,7 +8,7 @@ class Products(models.Model):
     # product id
     pid = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=30)
-    quantity_in_stock = models.IntegerField(default=0)
+    quantity_in_stock = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
     unit = models.CharField(max_length=5)
     serial_number = models.DateTimeField()
     expiration_date_in_days = models.PositiveIntegerField()

@@ -127,15 +127,15 @@ def insert_nutritionalvalues(
             print("You can't add nutritional values to the same product")
 
 
-def insert_product(pid: int, name: str, quantity_in_stock: int, unit: str, poss_in_stock: int, expiration_date: int):
+def insert_product(name: str, quantity_in_stock: float, unit: str, expiration_date: int, price: float):
     # expiration_date is the number of days the product is fit for consumption
     done = False
     with connection.cursor() as cursor:
         max_val_sql = "SELECT max(pid) AS val FROM database_project_products"
         cursor.execute(max_val_sql)
         max_val = cursor.fetchone()[0]
-        sql = "INSERT INTO database_project_products (id, pid, name, quantity_in_stock, unit, poss_in_stock," \
-              " serial_number, expiration_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        sql = "INSERT INTO database_project_products (pid, name, quantity_in_stock, unit, " \
+              " serial_number, expiration_date_in_days, price) VALUES (%s, %s, %s, %s, %s, %s, %s)"
         serial_number = datetime.datetime.now()
         #expiration_date = serial_number + datetime.timedelta(days=expiration_date)
         is_pid_sql = "SELECT * FROM database_project_products WHERE pid = %s "

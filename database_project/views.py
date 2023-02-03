@@ -228,7 +228,6 @@ def add_product(request):
         if request.user.role != 3:
             messages.error(request, "To może zrobić tylko pracownik.")
             return redirect(request.META["HTTP_REFERER"], messages)
-
         name = request.POST.get("name")
         quantity_in_stock = request.POST.get("quantity_in_stock")
         unit = request.POST.get("unit")
@@ -236,7 +235,7 @@ def add_product(request):
         price = request.POST.get("price")
 
         try:
-            done = insert_product(name, int(quantity_in_stock), unit, int(expiration_date_in_days), float(price))
+            done = insert_product(name, float(quantity_in_stock), unit, int(expiration_date_in_days), float(price))
         except (Exception,):
             messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
             form = AddProductForm()

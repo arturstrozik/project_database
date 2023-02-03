@@ -116,7 +116,7 @@ class AddProductForm(forms.Form):
         self.helper.add_input(Submit("submit", "Dodaj"))
 
     name = forms.CharField(label="Nazwa produktu", max_length=30)
-    quantity_in_stock = forms.IntegerField(label="Ilość (w sztukach)")
+    quantity_in_stock = forms.FloatField(label="Ilość")
     unit = forms.CharField(label="Jednostka", max_length=5)
     expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
