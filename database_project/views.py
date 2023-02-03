@@ -189,7 +189,7 @@ def logout_user(request):
 
 @login_required
 def change_stock(request):
-    if not request.user.is_staff:
+    if request.user.role != 3:
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
@@ -200,16 +200,13 @@ def change_stock(request):
         except KeyError:
             pass
     if request.method == "POST":
-        poss = request.GET["possition"]
-        item_id = request.POST["item_id"]
-        quantity = request.POST["quantity"]
-        placement_time = request.POST["placement_time"]
+        poss = request.GET.get("possition")
+        item_id = request.POST.get("item_id")
+        quantity = request.POST.get("quantity")
+        placement_time = request.POST.get("placement_time")
         placer = request.user.username
-        expiration_date = request.POST["expiration_date"]
-        try:
-            is_product = request.POST["is_product"]
-        except KeyError:
-            is_product = False
+        expiration_date = request.POST.get("expiration_date")
+        is_product = request.POST.get("is_product", False)
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -230,6 +227,7 @@ def change_stock(request):
     return render(request, "change_stock.html", {"form": form})
 
 
+@login_required
 def add_product(request):
     if request.method == "POST":
         name = request.POST.get("name")
