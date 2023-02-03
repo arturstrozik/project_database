@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -21,7 +22,7 @@ from django.contrib.auth.forms import (
     SetPasswordForm,
 )
 
-from .sql_queries import insert_product
+from .sql_queries import insert_product, insert_new_user
 
 
 def home(request):
@@ -154,25 +155,19 @@ def orders(request):
 def register(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
-        print("jest POST")
         if form.is_valid():
-            print("jest valid")
-            user = form.save()
-            user.refresh_from_db()
-            user.is_active = True
-            user.first_name = form.cleaned_data.get("first_name")
-            user.last_surname = form.cleaned_data.get("last_name")
-            user.email = form.cleaned_data.get("email")
-            print(user.email)
-            user.save()
-            current_site = get_current_site(request)
+            done = insert_new_user(make_password(form.cleaned_data.get("password1")),
+                                   form.cleaned_data.get("username"),
+                                   form.cleaned_data.get("first_name"),
+                                   form.cleaned_data.get("last_name"),
+                                   form.cleaned_data.get("email"))
 
-            # return render(request, "registration/confirm.html", {'foo': 'bar'})
-            messages.success(
-                request,
-                "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować",
-            )
-            return redirect("home")
+            if done:
+                messages.success(request, "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować")
+                return redirect('home')
+            else:
+                form = form
+                return render(request, "registration/register.html", {"form": form})
         else:
             form = form
             return render(request, "registration/register.html", {"form": form})
@@ -230,6 +225,10 @@ def change_stock(request):
 @login_required
 def add_product(request):
     if request.method == "POST":
+        if request.user.role != 3:
+            messages.error(request, "To może zrobić tylko pracownik.")
+            return redirect(request.META["HTTP_REFERER"], messages)
+
         name = request.POST.get("name")
         quantity_in_stock = request.POST.get("quantity_in_stock")
         unit = request.POST.get("unit")
