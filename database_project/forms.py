@@ -10,6 +10,7 @@ from django.db import connection
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
+from django.core.validators import MinValueValidator
 
 
 class NewOrderForm(forms.Form):
@@ -100,3 +101,18 @@ class ChangeStockForm(forms.Form):
     is_product = forms.BooleanField(
         label="Towar jest produktem końcowym", required=False
     )
+
+
+class AddProductForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_action = reverse("add_product")
+        self.helper.form_method = "POST"
+        self.helper.add_input(Submit("submit", "Dodaj"))
+
+    name = forms.CharField(label="Nazwa produktu", max_length=30)
+    quantity_in_stock = forms.IntegerField(label="Ilość (w sztukach)")
+    unit = forms.CharField(label="Jednostka", max_length=5)
+    expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
+    price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])

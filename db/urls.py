@@ -31,4 +31,5 @@ urlpatterns = [
     path("register/", db_views.register, name="register"),
     path("logout/", database_project.views.logout_user, name="logout"),
     path("change_stock/", database_project.views.change_stock, name="change_stock"),
+    path("add_product/", database_project.views.add_product, name="add_product"),
 ]

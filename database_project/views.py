@@ -12,7 +12,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm, ChangeStockForm
+from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -20,6 +20,8 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
+
+from .sql_queries import insert_product
 
 
 def home(request):
@@ -185,3 +187,30 @@ def change_stock(request):
     form.fields["placer"].initial = request.user.username
     form.fields["placer"].disabled = True
     return render(request, "change_stock.html", {"form": form})
+
+
+def add_product(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        quantity_in_stock = request.POST.get("quantity_in_stock")
+        unit = request.POST.get("unit")
+        expiration_date_in_days = request.POST.get("expiration_date_in_days")
+        price = request.POST.get("price")
+
+        try:
+            done = insert_product(name, int(quantity_in_stock), unit, int(expiration_date_in_days), float(price))
+        except (Exception,):
+            messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
+            form = AddProductForm()
+            return render(request, "add_product.html", {"form": form})
+        else:
+            if done:
+                messages.success(request, "Produkt został pomyślnie dodany.")
+                return redirect('home')
+            else:
+                messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
+                form = AddProductForm()
+                return render(request, "add_product.html", {"form": form})
+    else:
+        form = AddProductForm()
+        return render(request, "add_product.html",  {"form": form})
