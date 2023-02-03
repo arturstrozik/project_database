@@ -3,6 +3,44 @@ import traceback
 import datetime
 
 
+def insert_new_user(password, username, first_name, last_name, email):
+    done = False
+    with connection.cursor() as cursor:
+        sql = "INSERT INTO database_project_user (id, password, username, first_name, last_name, " \
+              "email, date_joined, is_active, is_superuser, is_staff, role) " \
+              "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        date_joined = datetime.datetime.now()
+        max_val_sql = "SELECT max(id) AS val FROM database_project_user"
+        cursor.execute(max_val_sql)
+        max_val = cursor.fetchone()[0]
+
+        # when tabel is empty max_val is None
+        try:
+            val = (max_val + 1, password, username, first_name, last_name, email, date_joined, True, False, False, 1)
+        except TypeError:
+            val = (1, password, username, first_name, last_name, email, date_joined, True, False, False, 1)
+
+        is_username_sql = "SELECT * FROM database_project_user WHERE username = %s "
+        if max_val is None:
+            is_username = None
+        else:
+            cursor.execute(is_username_sql, [username])
+            is_username = cursor.fetchone()
+
+        if is_username is None:
+            try:
+                cursor.execute(sql, val)
+                done = True
+                return done
+            except(Exception,):
+                print("Error - insert_new_user function")
+                traceback.print_exc()
+                return done
+        else:
+            print("Nie może być 2 użytkowników o tej samej nazwie.")
+            return done
+
+
 def insert_client(is_company: bool, contact: str, name: str, nip: int, address: str):
     with connection.cursor() as cursor:
         max_val_sql = "SELECT max(id) AS val FROM database_project_clients"
@@ -118,11 +156,13 @@ def insert_product(pid: int, name: str, quantity_in_stock: int, unit: str, poss_
                 cursor.execute(sql, val)
                 done = True
                 return done
-            except:
+            except(Exception,):
                 print("Error - insert_product function")
                 traceback.print_exc()
+                return done
         else:
             print("You can't add product with the same pid")
+            return done
 
 
 def insert_rawmaterials(

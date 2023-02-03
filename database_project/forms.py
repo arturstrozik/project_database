@@ -13,6 +13,7 @@ from .models import User
 from django.core.validators import MinValueValidator
 
 
+
 class NewOrderForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,9 +65,12 @@ class NewOrderForm(forms.Form):
 class SignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["username"].required = True
         self.fields["email"].required = True
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
+        self.fields["password1"].required = True
+        self.fields["password2"].required = True
 
     class Meta:
         model = User
