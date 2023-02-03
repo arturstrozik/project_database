@@ -28,18 +28,22 @@ def home(request):
     return render(request, "base.html")
 
 
+@login_required()
 def new_order(request):
+    form = NewOrderForm()
+    form.fields["client_id"].initial = request.user.id
+    form.fields["client_id"].disabled = True
     if request.method == "POST":
-        client_id = request.POST.get("client_id")
+        client_id = request.user.id
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM database_project_clients where id = '{0}'".format(
+                "SELECT * FROM database_project_user where id = '{0}' and role = 1".format(
                     str(client_id)
                 )
             )
             client = cursor.fetchone()
         if not client:
-            form = NewOrderForm()
+            messages.error(request, "Nie odnaleźliśmy Cię w naszej bazie klientów.")
             return render(request, "new_order.html", {"form": form})
         data = datetime.datetime.now()
         product = request.POST.get("product")
@@ -52,16 +56,19 @@ def new_order(request):
                 )
             )
             row = cursor.fetchone()
+            if row is None:
+                messages.error(request, "Nie wybrano produktu, lub produkt jest niedostępny.")
+                return render(request, "new_order.html", {"form": form})
             product_id = row[0]
             price = row[1]
         sum_price = float(quantity) * float(price)
-        time_change = datetime.timedelta(days=7)
+        time_change = datetime.timedelta(days=14)
         dead_line = data + time_change
 
         with connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line) "
-                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}')".format(
+                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line, is_done) "
+                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', '{7}')".format(
                     client_id,
                     product_id,
                     quantity,
@@ -69,11 +76,11 @@ def new_order(request):
                     sum_price,
                     delivery,
                     dead_line,
+                    str(False),
                 )
             )
         return redirect("/")
     else:
-        form = NewOrderForm()
         return render(request, "new_order.html", {"form": form})
 
 
