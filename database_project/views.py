@@ -276,4 +276,17 @@ def add_raw_material(request):
     return render(request, "add_material.html", {"form": form})
 
 
+@login_required
+def delivery_declaration(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko dostawca.")
+        return redirect("/", messages)
+    if request.method == "POST":
+        pass
+    all = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials")
+        for row in cursor.fetchall():
+            all.append(row)
+    return render(request, "material_list.html", {"all": all})
 

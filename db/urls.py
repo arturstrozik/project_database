@@ -34,4 +34,5 @@ urlpatterns = [
     path("add_product/", database_project.views.add_product, name="add_product"),
     path("orders/", database_project.views.orders, name="orders"),
     path("add_material/", database_project.views.add_raw_material, name="add_material"),
+    path("delivery_declaration", database_project.views.delivery_declaration, name="delivery_declaration"),
 ]

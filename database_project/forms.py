@@ -13,7 +13,6 @@ from .models import User
 from django.core.validators import MinValueValidator
 
 
-
 class NewOrderForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
