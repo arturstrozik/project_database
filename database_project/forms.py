@@ -120,3 +120,15 @@ class AddProductForm(forms.Form):
     unit = forms.CharField(label="Jednostka", max_length=5)
     expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
+
+
+class AddRawMaterial(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_action = reverse("add_product")
+        self.helper.form_method = "POST"
+        self.helper.add_input(Submit("submit", "Dodaj"))
+
+    name = forms.CharField(label="Nazwa materiału", max_length=30)
+    unit = forms.CharField(label="Jednostka", max_length=5)

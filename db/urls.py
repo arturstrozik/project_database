@@ -33,4 +33,5 @@ urlpatterns = [
     path("change_stock/", database_project.views.change_stock, name="change_stock"),
     path("add_product/", database_project.views.add_product, name="add_product"),
     path("orders/", database_project.views.orders, name="orders"),
+    path("add_material/", database_project.views.add_raw_material, name="add_material"),
 ]

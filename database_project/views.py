@@ -13,7 +13,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm
+from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -251,3 +251,29 @@ def add_product(request):
     else:
         form = AddProductForm()
         return render(request, "add_product.html",  {"form": form})
+
+
+@login_required
+def add_raw_material(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
+    if request.method == "POST":
+        name = request.POST.get("name")
+        unit = request.POST.get("unit")
+        quantity = 0
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM database_project_rawmaterials WHERE name=%s",
+                           [name])
+            if len(cursor.fetchall()) > 0:
+                messages.error(request, "Ten rodzaj materiału już jest w naszej bazie.")
+                return redirect(request.META["HTTP_REFERER"], messages)
+            cursor.execute("INSERT INTO database_project_rawmaterials (name, quantity_in_stock, unit) "
+                           "VALUES (%s, %s, %s) ", [name, str(quantity), unit])
+            messages.success(request, "Materiał dodany do bazy danych.")
+            return redirect(request.META["HTTP_REFERER"], messages)
+    form = AddRawMaterial()
+    return render(request, "add_material.html", {"form": form})
+
+
+
