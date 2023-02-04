@@ -3,29 +3,30 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="col-md-12 mt-5">
-        {% csrf_token %}
-        <table>
-            <tr>
-                <th>ID materiału</th>
-                <th>Nazwa materiału</th>
-                <th>Ilość w magazynie</th>
-                <th>Jednostka</th>
-                <th>Czy chcesz dostarczać</th>
-            </tr>
-            {% for row in all %}
+        <form action="{% url 'delivery_declaration' %}" method="post" class="mb-2">
+            {% csrf_token %}
+            <table>
                 <tr>
-                {% for element in row %}
-                    <td>
-                        {{ element }}
-                    </td>
-                {% endfor %}
-                <td>
-                     <form action="{% url 'change_stock' %}" method="get" class="mb-2">
-                        <input type="checkbox" value="{{ row.0 }}">
-                    </form>
-                </td>
+                    <th>ID materiału</th>
+                    <th>Nazwa materiału</th>
+                    <th>Ilość w magazynie</th>
+                    <th>Jednostka</th>
+                    <th>Czy chcesz dostarczać</th>
                 </tr>
-            {% endfor %}
-        </table>
+                {% for row in materials %}
+                    <tr>
+                    {% for element in row %}
+                        <td>
+                            {{ element }}
+                        </td>
+                    {% endfor %}
+                    <td>
+                        <input type="checkbox" name="delivers" value="{{ row.0 }}" {% if row.0 in declared %} checked="checked" {% endif %}>
+                    </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <button class="btn btn-secondary fs-5" type="submit" name="naterial_declaring">Potwierdź</button>
+        </form>
     </div>
 {% endblock %}
