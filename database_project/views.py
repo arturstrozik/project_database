@@ -224,10 +224,10 @@ def change_stock(request):
 
 @login_required
 def add_product(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
-        if request.user.role != 3:
-            messages.error(request, "To może zrobić tylko pracownik.")
-            return redirect(request.META["HTTP_REFERER"], messages)
         name = request.POST.get("name")
         quantity_in_stock = request.POST.get("quantity_in_stock")
         unit = request.POST.get("unit")

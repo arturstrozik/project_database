@@ -27,7 +27,7 @@ class NewOrderForm(forms.Form):
 
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT name, price, quantity_in_stock, unit unit FROM database_project_products"
+            "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
         )
         product_list = cursor.fetchall()
     product_tuple = ()

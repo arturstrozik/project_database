@@ -45,12 +45,10 @@ class NutritionalValues(models.Model):
 
 class RawMaterials(models.Model):
     # raw material id
-    rmid = models.IntegerField(primary_key=True)
+    rmid = models.AutoField(primary_key=True, auto_created=True)
     name = models.CharField(max_length=40)
     quantity_in_stock = models.IntegerField(default=0)
     unit = models.CharField(max_length=5)
-    # supplier id
-    sid = models.IntegerField()
 
 
 class Suppliers(models.Model):
