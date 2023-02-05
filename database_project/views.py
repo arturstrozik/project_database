@@ -297,15 +297,29 @@ def add_raw_material(request):
 
 @login_required
 def delivery_declaration(request):
-    if request.user.role != 3:
+    # only for delivers
+    if request.user.role != 2:
         messages.error(request, "To może zrobić tylko dostawca.")
         return redirect("/", messages)
     if request.method == "POST":
-        pass
-    all = []
+        list = request.POST.getlist('delivers')
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM database_project_deliverdeclaration WHERE sid=%s", [request.user.id])
+            for element in list:
+                cursor.execute("INSERT INTO database_project_deliverdeclaration (rmid, sid)"
+                               "VALUES (%s, %s)",
+                               [
+                                   element,
+                                   request.user.id,
+                               ])
+    materials = []
+    declared = []
     with connection.cursor() as cursor:
         cursor.execute("SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials")
         for row in cursor.fetchall():
-            all.append(row)
-    return render(request, "material_list.html", {"all": all})
+            materials.append(row)
+        cursor.execute("SELECT rmid FROM database_project_deliverdeclaration WHERE sid=%s", [request.user.id])
+        for row in cursor.fetchall():
+            declared.append(row[0])
+    return render(request, "material_list.html", {"materials": materials, "declared": declared})
 

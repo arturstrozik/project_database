@@ -53,7 +53,7 @@ class RawMaterials(models.Model):
 
 
 class Suppliers(models.Model):
-    sid = models.IntegerField(primary_key=True)
+    sid = models.ForeignKey("User", on_delete=models.CASCADE)
     name = models.CharField(max_length=50, unique=True)
     nip = models.IntegerField(unique=True)
     contact = models.CharField(max_length=12)
@@ -72,7 +72,7 @@ class Orders(models.Model):
 
 
 class Clients(models.Model):
-    cid = models.IntegerField(primary_key=True)
+    cid = models.ForeignKey("User", on_delete=models.CASCADE)
     is_company = models.BooleanField()
     contact = models.CharField(max_length=12)
     name = models.CharField(max_length=60)
@@ -85,3 +85,11 @@ class User(AbstractUser):
     # role 2 - deliver
     # role 3 - worker
     role = models.IntegerField(default=1)
+
+
+class DeliverDeclaration(models.Model):
+    sid = models.IntegerField()
+    rmid = models.IntegerField()
+
+    class Meta:
+        unique_together = ("sid", "rmid")
