@@ -45,6 +45,18 @@
                                             <ul class="dropdown-menu">
                                                 <li><a class="dropdown-item" href="{% url 'orders' %}">Zamówienia</a></li>
                                                 <li><a class="dropdown-item" href="{% url 'add_product' %}">Nowy produkt</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'change_stock' %}">Zmień stan magazynu</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'add_material' %}">Dodaj materiały</a></li>
+                                            </ul>
+                                        {% endif %}
+                                        {% if user.role == 2 %}
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'delivery_declaration' %}">Deklaracje</a></li>
+                                            </ul>
+                                        {% endif %}
+                                        {% if user.role == 1 %}
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{% url 'new_order' %}">Nowe zamówienie</a></li>
                                             </ul>
                                         {% endif %}
                                     </div>
