@@ -74,6 +74,7 @@ def insert_nutritionalvalues(
     energy: float,
     product_id: int,
 ):
+    done = False
     with connection.cursor() as cursor:
         max_val_sql = "SELECT max(id) AS val FROM database_project_nutritionalvalues"
         cursor.execute(max_val_sql)
@@ -117,19 +118,24 @@ def insert_nutritionalvalues(
                 )
             except KeyError:
                 print("Key (product_id) already exists.")
+                return done
 
             try:
                 cursor.execute(sql, val)
-            except:
+                done = True
+                return done
+            except(Exception,):
                 print("Error - insert_nutritionalvalues function")
                 traceback.print_exc()
+                return done
         else:
             print("You can't add nutritional values to the same product")
+            return done
 
 
 def insert_product(name: str, quantity_in_stock: float, unit: str, expiration_date: int, price: float):
     # expiration_date is the number of days the product is fit for consumption
-    done = False
+    done = {"status": False, "pid": 0}
     with connection.cursor() as cursor:
         max_val_sql = "SELECT max(pid) AS val FROM database_project_products"
         cursor.execute(max_val_sql)
@@ -151,10 +157,10 @@ def insert_product(name: str, quantity_in_stock: float, unit: str, expiration_da
                 val = (max_val + 1, name, quantity_in_stock, unit, serial_number, expiration_date, price)
             except TypeError:
                 val = (1, name, quantity_in_stock, unit, serial_number, expiration_date, price)
-
             try:
                 cursor.execute(sql, val)
-                done = True
+                done["status"] = True
+                done["pid"] = val[0]
                 return done
             except(Exception,):
                 print("Error - insert_product function")
@@ -282,24 +288,28 @@ def insert_supplier(sid: int, name: str, nip: int, contact: str, bank_account: i
             print("Values sid, name and nip have to be unique")
 
 
-def insert_technology(name: str, production_time_h: float, recipe: str):
+def insert_technology(name: str, production_time_h: float, recipe: str, product_id: int):
+    done = False
     with connection.cursor() as cursor:
         max_val_sql = "SELECT max(id) AS val FROM database_project_technology"
         cursor.execute(max_val_sql)
         max_val = cursor.fetchone()[0]
         sql = (
-            "INSERT INTO database_project_technology (id, name, production_time_h, recipe) "
-            "VALUES (%s, %s, %s, %s)"
+            "INSERT INTO database_project_technology (id, name, production_time_h, recipe, product_id) "
+            "VALUES (%s, %s, %s, %s, %s)"
         )
 
         # when tabel is empty max_val is None
         try:
-            val = (max_val + 1, name, production_time_h, recipe)
+            val = (max_val + 1, name, production_time_h, recipe, product_id)
         except TypeError:
-            val = (1, name, production_time_h, recipe)
+            val = (1, name, production_time_h, recipe, product_id)
 
         try:
             cursor.execute(sql, val)
-        except:
+            done = True
+            return done
+        except(Exception,):
             print("Error - insert_technology function")
             traceback.print_exc()
+            return done

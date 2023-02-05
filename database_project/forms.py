@@ -119,6 +119,16 @@ class AddProductForm(forms.Form):
     unit = forms.CharField(label="Jednostka", max_length=5)
     expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
+    technology_name = forms.CharField(label="Nazwa technologi", max_length=50)
+    production_time_h = forms.FloatField(label="Czas produkcji", validators=[MinValueValidator(0.0)])
+    recipe = forms.CharField(label="Przepis", max_length=5000)
+    protein = forms.FloatField(label="Białko", validators=[MinValueValidator(0.0)])
+    carbohydrate = forms.FloatField(label="Węglowodany", validators=[MinValueValidator(0.0)])
+    carbohydrate_of_witch_sugars = forms.FloatField(label="W tym cukry", validators=[MinValueValidator(0.0)])
+    salt = forms.FloatField(label="Sól", validators=[MinValueValidator(0.0)])
+    fat = forms.FloatField(label="Tłuszcz", validators=[MinValueValidator(0.0)])
+    fat_of_witch_saturates = forms.FloatField(label="W tym nasycone", validators=[MinValueValidator(0.0)])
+    energy = forms.FloatField(label="Energia", validators=[MinValueValidator(0.0)])
 
 
 class AddRawMaterial(forms.Form):

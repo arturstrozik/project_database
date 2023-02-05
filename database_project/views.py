@@ -22,7 +22,8 @@ from django.contrib.auth.forms import (
     SetPasswordForm,
 )
 
-from .sql_queries import insert_product, insert_new_user
+from .sql_queries import *
+from django.db import transaction
 
 
 def home(request):
@@ -223,7 +224,9 @@ def change_stock(request):
 
 
 @login_required
+@transaction.atomic
 def add_product(request):
+    save_point = transaction.savepoint()
     if request.user.role != 3:
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
@@ -233,23 +236,39 @@ def add_product(request):
         unit = request.POST.get("unit")
         expiration_date_in_days = request.POST.get("expiration_date_in_days")
         price = request.POST.get("price")
+        technology_name = request.POST.get("technology_name")
+        production_time_h = request.POST.get("production_time_h")
+        recipe = request.POST.get("recipe")
+        protein = request.POST.get("protein")
+        carbohydrate = request.POST.get("carbohydrate")
+        carbohydrate_of_witch_sugars = request.POST.get("carbohydrate_of_witch_sugars")
+        salt = request.POST.get("salt")
+        fat = request.POST.get("fat")
+        fat_of_witch_saturates = request.POST.get("fat_of_witch_saturates")
+        energy = request.POST.get("energy")
 
         try:
             done = insert_product(name, float(quantity_in_stock), unit, int(expiration_date_in_days), float(price))
+            tech_status = insert_technology(technology_name, production_time_h, recipe, done["pid"])
+            nutr_status = insert_nutritionalvalues(protein, carbohydrate, carbohydrate_of_witch_sugars,
+                                                   salt, fat, fat_of_witch_saturates, energy, done["pid"])
         except (Exception,):
             messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
             form = AddProductForm()
             return render(request, "add_product.html", {"form": form})
         else:
-            if done:
+            if done["status"] and tech_status and nutr_status:
                 messages.success(request, "Produkt został pomyślnie dodany.")
+                transaction.savepoint_commit(save_point)
                 return redirect('home')
             else:
                 messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
                 form = AddProductForm()
+                transaction.savepoint_rollback(save_point)
                 return render(request, "add_product.html", {"form": form})
     else:
         form = AddProductForm()
+        transaction.savepoint_rollback(save_point)
         return render(request, "add_product.html",  {"form": form})
 
 

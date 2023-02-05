@@ -3,10 +3,11 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-  <h2>Sign up</h2>
+  <h2>Rejestracja</h2>
   <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
-    <button  type="submit"  class="btn btn-success">Sign up</button>
+      <h4>Jeśli chcesz zostać dostawcą, skontaktuj się z nami w celu weryfikacji.</h4>
+    <button  type="submit"  class="btn btn-success">Rejestracja</button>
   </form>
 {% endblock %}
