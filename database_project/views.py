@@ -88,7 +88,8 @@ def new_order(request):
 
 @login_required
 def stock(request):
-    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = (
+    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products, item_name = (
+        [],
         [],
         [],
         [],
@@ -101,8 +102,12 @@ def stock(request):
     all = ()
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT poss, item_id, quantity, placement_time, placer, expiration_date, is_product "
-            "FROM database_project_stock ORDER BY poss"
+            "(SELECT poss, is_product, item_id, name , quantity, placement_time, placer, expiration_date "
+            "FROM database_project_stock LEFT JOIN database_project_products ON item_id=pid WHERE is_product=True "
+            "UNION "
+            "SELECT poss, is_product, item_id, name , quantity, placement_time, placer, expiration_date "
+            "FROM database_project_stock LEFT JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False) "
+            "ORDER BY poss"
         )
         for row in cursor.fetchall():
             poss.append(row[0])
@@ -217,7 +222,7 @@ def change_stock(request):
                     poss,
                 ],
             )
-        return redirect(request, "stock")
+        return redirect("/stock")
     form.fields["placer"].initial = request.user.username
     form.fields["placer"].disabled = True
     return render(request, "change_stock.html", {"form": form})
