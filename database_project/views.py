@@ -117,6 +117,9 @@ def stock(request):
                 "FROM database_project_stock LEFT JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False) "
                 "ORDER BY poss"
             )
+        else:
+            messages.error(request, "Nie masz dostępu do magazynu. Skontaktuj się z supportem lub administratorem.")
+            return render(request, "/", messages)
         for row in cursor.fetchall():
             all = all + (row,)
     context = {
