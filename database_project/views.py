@@ -88,35 +88,36 @@ def new_order(request):
 
 @login_required
 def stock(request):
-    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products, item_name = (
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    )
     all = ()
     with connection.cursor() as cursor:
-        cursor.execute(
-            "(SELECT poss, is_product, item_id, name , quantity, placement_time, placer, expiration_date "
-            "FROM database_project_stock LEFT JOIN database_project_products ON item_id=pid WHERE is_product=True "
-            "UNION "
-            "SELECT poss, is_product, item_id, name , quantity, placement_time, placer, expiration_date "
-            "FROM database_project_stock LEFT JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False) "
-            "ORDER BY poss"
-        )
+        if request.user.role == 1:
+            cursor.execute(
+                "(SELECT name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "GROUP BY name) "
+                "ORDER BY name"
+            )
+        elif request.user.role == 2:
+            cursor.execute(
+                "(SELECT is_product, name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "GROUP BY name, is_product "
+                "UNION "
+                "SELECT is_product, name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False "
+                "GROUP BY name, is_product) "
+                "ORDER BY name"
+            )
+        elif request.user.role == 3:
+            cursor.execute(
+                "(SELECT poss, is_product, item_id, name, quantity, placement_time, placer, expiration_date "
+                "FROM database_project_stock LEFT JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "UNION "
+                "SELECT poss, is_product, item_id, name, quantity, placement_time, placer, expiration_date "
+                "FROM database_project_stock LEFT JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False) "
+                "ORDER BY poss"
+            )
         for row in cursor.fetchall():
-            poss.append(row[0])
-            item_ids.append(row[1])
-            quantitys.append(row[2])
-            placement_times.append(row[3])
-            placers.append(row[4])
-            exp_dates.append(row[5])
-            is_products.append(row[6])
             all = all + (row,)
     context = {
         "all": all,

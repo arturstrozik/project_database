@@ -6,14 +6,16 @@
         {% csrf_token %}
         <table>
             <tr>
-                <th>Pozycja</th>
-                <th>Czy produkt</th>
-                <th>ID przedmiotu</th>
+                {% if user.role == 3 %}<th>Pozycja</th>{% endif %}
+                {% if user.role == 2 or user.role == 3 %}<th>Czy produkt</th>{% endif %}
+                {% if user.role == 3 %}<th>ID przedmiotu</th>{% endif %}
                 <th>Nazwa przedmiotu</th>
                 <th>Ilość w magazynie</th>
-                <th>Czas złożenia w magazynie</th>
-                <th>Magazynier</th>
-                <th>Termina ważności</th>
+                {% if user.role == 3 %}
+                    <th>Czas złożenia w magazynie</th>
+                    <th>Magazynier</th>
+                    <th>Termina ważności</th>
+                {% endif %}
             </tr>
             {% for row in all %}
                 <tr>
