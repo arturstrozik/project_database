@@ -22,12 +22,13 @@
                         {{ element }}
                     </td>
                 {% endfor %}
-                <td>
-                     <form action="{% url 'change_stock' %}" method="get" class="mb-2">
-                        <button class="btn btn-secondary fs-5" type="submit"
-                                name="possition" value="{{ row.0 }}">Zmień</button>
-                    </form>
-                </td>
+                {% if user.role == 3 %}
+                    <td>
+                         <form action="{% url 'change_stock' %}" method="get" class="mb-2">
+                            <button class="btn btn-secondary fs-5" type="submit" name="possition" value="{{ row.0 }}">Zmień</button>
+                        </form>
+                    </td>
+                {% endif %}
                 </tr>
             {% endfor %}
         </table>
