@@ -69,8 +69,8 @@ def new_order(request):
 
         with connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line, is_done) "
-                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', '{7}')".format(
+                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line, is_done, status) "
+                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', '{7}', '{8}')".format(
                     client_id,
                     product_id,
                     quantity,
@@ -79,8 +79,10 @@ def new_order(request):
                     delivery,
                     dead_line,
                     str(False),
+                    "Oczekujące"
                 )
             )
+        messages.success("Zamówienie zostało złożone.")
         return redirect("/")
     else:
         return render(request, "new_order.html", {"form": form})
@@ -130,31 +132,13 @@ def stock(request):
 
 @login_required
 def orders(request):
-    ids, cids, pids, quantitys, prices, total_amounts, delivery_methods, dead_lines  = (
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    )
     all = ()
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line "
+            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status "
             "FROM database_project_orders ORDER BY id"
         )
         for row in cursor.fetchall():
-            ids.append(row[0])
-            cids.append(row[1])
-            pids.append(row[2])
-            quantitys.append(row[3])
-            prices.append(row[4])
-            total_amounts.append(row[5])
-            delivery_methods.append(row[6])
-            dead_lines.append(row[7])
             all = all + (row,)
     context = {
         "all": all,
