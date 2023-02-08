@@ -13,7 +13,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial
+from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial, OrderHandling
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -160,6 +160,43 @@ def orders(request):
         "all": all,
     }
     return render(request, "orders.html", context)
+
+
+@login_required
+def order_handling(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect("/", messages)
+    form = OrderHandling()
+    if request.method == "GET":
+        order_id = request.GET.get("order_id")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT c.id, c.username, o.status FROM database_project_orders o "
+                "INNER JOIN database_project_user c ON o.cid=c.id "
+                "WHERE o.id=%s",
+                [str(order_id)]
+            )
+            client_data = cursor.fetchone()
+            try:
+                form.fields["client_data"].initial = str(client_data[0]) + ", " + str(client_data[1])
+                form.fields["client_data"].disabled = True
+                form.fields["id"].initial = order_id
+                form.fields["id"].disabled = True
+                form.fields["status"].initial = client_data[2]
+            except KeyError:
+                messages.error(request, "Błędny formularz.")
+                return redirect("/", messages)
+    if request.method == "POST":
+        status = request.POST.get("status")
+        order_id = request.GET.get("order_id")
+        if status is not None:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE database_project_orders set status=%s WHERE id=%s", [status, order_id]
+                )
+            return redirect(orders)
+    return render(request, "order_handling.html", {"form": form})
 
 
 def register(request):
