@@ -13,8 +13,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial, UpdateProductForm, \
-    SelectProductForm, DeleteProductForm
+from .forms import *
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -70,8 +69,8 @@ def new_order(request):
 
         with connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line, is_done) "
-                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', '{7}')".format(
+                "INSERT INTO database_project_orders (cid, pid, quantity, price, total_amount, delivery_method, dead_line, is_done, status) "
+                "VALUES ({0}, {1}, {2}, {3}, {4}, '{5}', '{6}', '{7}', '{8}')".format(
                     client_id,
                     product_id,
                     quantity,
@@ -80,8 +79,10 @@ def new_order(request):
                     delivery,
                     dead_line,
                     str(False),
+                    "Oczekujące"
                 )
             )
+        messages.success("Zamówienie zostało złożone.")
         return redirect("/")
     else:
         return render(request, "new_order.html", {"form": form})
@@ -89,30 +90,39 @@ def new_order(request):
 
 @login_required
 def stock(request):
-    ids, poss, item_ids, quantitys, placement_times, placers, exp_dates, is_products = (
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    )
     all = ()
     with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT poss, item_id, quantity, placement_time, placer, expiration_date, is_product "
-            "FROM database_project_stock ORDER BY poss"
-        )
+        if request.user.role == 1:
+            cursor.execute(
+                "(SELECT name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "GROUP BY name) "
+                "ORDER BY name"
+            )
+        elif request.user.role == 2:
+            cursor.execute(
+                "(SELECT is_product, name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "GROUP BY name, is_product "
+                "UNION "
+                "SELECT is_product, name, sum(quantity) "
+                "FROM database_project_stock INNER JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False "
+                "GROUP BY name, is_product) "
+                "ORDER BY name"
+            )
+        elif request.user.role == 3:
+            cursor.execute(
+                "(SELECT poss, is_product, item_id, name, quantity, placement_time, placer, expiration_date "
+                "FROM database_project_stock LEFT JOIN database_project_products ON item_id=pid WHERE is_product=True "
+                "UNION "
+                "SELECT poss, is_product, item_id, name, quantity, placement_time, placer, expiration_date "
+                "FROM database_project_stock LEFT JOIN database_project_rawmaterials ON item_id=rmid WHERE is_product=False) "
+                "ORDER BY poss"
+            )
+        else:
+            messages.error(request, "Nie masz dostępu do magazynu. Skontaktuj się z supportem lub administratorem.")
+            return render(request, "/", messages)
         for row in cursor.fetchall():
-            poss.append(row[0])
-            item_ids.append(row[1])
-            quantitys.append(row[2])
-            placement_times.append(row[3])
-            placers.append(row[4])
-            exp_dates.append(row[5])
-            is_products.append(row[6])
             all = all + (row,)
     context = {
         "all": all,
@@ -122,36 +132,55 @@ def stock(request):
 
 @login_required
 def orders(request):
-    ids, cids, pids, quantitys, prices, total_amounts, delivery_methods, dead_lines  = (
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    )
     all = ()
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line "
+            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status "
             "FROM database_project_orders ORDER BY id"
         )
         for row in cursor.fetchall():
-            ids.append(row[0])
-            cids.append(row[1])
-            pids.append(row[2])
-            quantitys.append(row[3])
-            prices.append(row[4])
-            total_amounts.append(row[5])
-            delivery_methods.append(row[6])
-            dead_lines.append(row[7])
             all = all + (row,)
     context = {
         "all": all,
     }
     return render(request, "orders.html", context)
+
+
+@login_required
+def order_handling(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect("/", messages)
+    form = OrderHandling()
+    if request.method == "GET":
+        order_id = request.GET.get("order_id")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT c.id, c.username, o.status FROM database_project_orders o "
+                "INNER JOIN database_project_user c ON o.cid=c.id "
+                "WHERE o.id=%s",
+                [str(order_id)]
+            )
+            client_data = cursor.fetchone()
+            try:
+                form.fields["client_data"].initial = str(client_data[0]) + ", " + str(client_data[1])
+                form.fields["client_data"].disabled = True
+                form.fields["id"].initial = order_id
+                form.fields["id"].disabled = True
+                form.fields["status"].initial = client_data[2]
+            except KeyError:
+                messages.error(request, "Błędny formularz.")
+                return redirect("/", messages)
+    if request.method == "POST":
+        status = request.POST.get("status")
+        order_id = request.GET.get("order_id")
+        if status is not None:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE database_project_orders set status=%s WHERE id=%s", [status, order_id]
+                )
+            return redirect(orders)
+    return render(request, "order_handling.html", {"form": form})
 
 
 def register(request):
@@ -218,7 +247,7 @@ def change_stock(request):
                     poss,
                 ],
             )
-        return redirect(request, "stock")
+        return redirect("/stock/")
     form.fields["placer"].initial = request.user.username
     form.fields["placer"].disabled = True
     return render(request, "change_stock.html", {"form": form})

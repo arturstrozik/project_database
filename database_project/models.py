@@ -68,6 +68,7 @@ class Orders(models.Model):
     total_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     delivery_method = models.CharField(max_length=15)
     dead_line = models.DateTimeField()
+    status = models.CharField(max_length=40)
     is_done = models.BooleanField()
 
 

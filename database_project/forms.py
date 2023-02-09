@@ -116,6 +116,7 @@ class AddProductForm(forms.Form):
         self.helper.add_input(Submit("submit", "Dodaj"))
 
     name = forms.CharField(label="Nazwa produktu", max_length=30)
+    quantity_in_stock = forms.FloatField(label="Ilość")
     unit = forms.CharField(label="Jednostka", max_length=5)
     expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
@@ -141,6 +142,19 @@ class AddRawMaterial(forms.Form):
 
     name = forms.CharField(label="Nazwa materiału", max_length=30)
     unit = forms.CharField(label="Jednostka", max_length=5)
+
+
+class OrderHandling(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_action = reverse("order_handling")
+        self.helper.form_method = "POST"
+        self.helper.add_input(Submit("submit", "Aktualizuj"))
+
+    id = forms.IntegerField(label="ID zamówienia")
+    client_data = forms.CharField(label="Klient")
+    status = forms.CharField(max_length=40, label="Status zamówenia")
 
 
 class UpdateProductForm(forms.Form):

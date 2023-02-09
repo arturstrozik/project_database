@@ -6,13 +6,16 @@
         {% csrf_token %}
         <table>
             <tr>
-                <th>Pozycja</th>
-                <th>ID przedmiotu</th>
+                {% if user.role == 3 %}<th>Pozycja</th>{% endif %}
+                {% if user.role == 2 or user.role == 3 %}<th>Czy produkt</th>{% endif %}
+                {% if user.role == 3 %}<th>ID przedmiotu</th>{% endif %}
+                <th>Nazwa przedmiotu</th>
                 <th>Ilość w magazynie</th>
-                <th>Czas złożenia w magazynie</th>
-                <th>Magazynier</th>
-                <th>Termina ważności</th>
-                <th>Czy produkt</th>
+                {% if user.role == 3 %}
+                    <th>Czas złożenia w magazynie</th>
+                    <th>Magazynier</th>
+                    <th>Termina ważności</th>
+                {% endif %}
             </tr>
             {% for row in all %}
                 <tr>
@@ -21,12 +24,13 @@
                         {{ element }}
                     </td>
                 {% endfor %}
-                <td>
-                     <form action="{% url 'change_stock' %}" method="get" class="mb-2">
-                        <button class="btn btn-secondary fs-5" type="submit"
-                                name="possition" value="{{ row.0 }}">Zmień</button>
-                    </form>
-                </td>
+                {% if user.role == 3 %}
+                    <td>
+                         <form action="{% url 'change_stock' %}" method="get" class="mb-2">
+                            <button class="btn btn-secondary fs-5" type="submit" name="possition" value="{{ row.0 }}">Zmień</button>
+                        </form>
+                    </td>
+                {% endif %}
                 </tr>
             {% endfor %}
         </table>
