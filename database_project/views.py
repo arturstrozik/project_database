@@ -13,7 +13,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial
+from .forms import NewOrderForm, SignUpForm, ChangeStockForm, AddProductForm, AddRawMaterial, UpdateProductForm, \
+    SelectProductForm, DeleteProductForm
 from django.views.generic.edit import FormView
 from django.contrib.auth.forms import (
     AuthenticationForm,
@@ -232,7 +233,6 @@ def add_product(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
         name = request.POST.get("name")
-        quantity_in_stock = request.POST.get("quantity_in_stock")
         unit = request.POST.get("unit")
         expiration_date_in_days = request.POST.get("expiration_date_in_days")
         price = request.POST.get("price")
@@ -248,7 +248,7 @@ def add_product(request):
         energy = request.POST.get("energy")
 
         try:
-            done = insert_product(name, float(quantity_in_stock), unit, int(expiration_date_in_days), float(price))
+            done = insert_product(name, unit, int(expiration_date_in_days), float(price))
             tech_status = insert_technology(technology_name, production_time_h, recipe, done["pid"])
             nutr_status = insert_nutritionalvalues(protein, carbohydrate, carbohydrate_of_witch_sugars,
                                                    salt, fat, fat_of_witch_saturates, energy, done["pid"])
@@ -322,4 +322,124 @@ def delivery_declaration(request):
         for row in cursor.fetchall():
             declared.append(row[0])
     return render(request, "material_list.html", {"materials": materials, "declared": declared})
+
+
+@login_required
+@transaction.atomic
+def update_product(request, product_id=0):
+    save_point = transaction.savepoint()
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
+
+    try:
+        product_data = get_specific_products(product_id)
+        technology_data = get_specific_technology(product_id)
+        nutritionalvalues_data = get_specific_nutritionalvalues(product_id)
+    except(Exception,):
+        messages.error(request, "Wystąpił błąd. Spróbuj ponownie później.")
+        return redirect('home')
+
+    print(product_data)
+    print(technology_data)
+    print(nutritionalvalues_data)
+    if request.method == "POST":
+        name = request.POST.get("name")
+        unit = request.POST.get("unit")
+        expiration_date_in_days = request.POST.get("expiration_date_in_days")
+        price = request.POST.get("price")
+        technology_name = request.POST.get("technology_name")
+        production_time_h = request.POST.get("production_time_h")
+        recipe = request.POST.get("recipe")
+        protein = request.POST.get("protein")
+        carbohydrate = request.POST.get("carbohydrate")
+        carbohydrate_of_witch_sugars = request.POST.get("carbohydrate_of_witch_sugars")
+        salt = request.POST.get("salt")
+        fat = request.POST.get("fat")
+        fat_of_witch_saturates = request.POST.get("fat_of_witch_saturates")
+        energy = request.POST.get("energy")
+
+        try:
+            up_product = update_product_sql(int(product_id), name, unit, int(expiration_date_in_days), float(price))
+            up_technology = update_technology_sql(technology_name, float(production_time_h), recipe, int(product_id))
+            up_nutritionalvalues = update_nutritionalvalues_sql(float(protein), float(carbohydrate),
+                                                                float(carbohydrate_of_witch_sugars), float(salt),
+                                                                float(fat), float(fat_of_witch_saturates),
+                                                                float(energy), int(product_id))
+        except (Exception,):
+            messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
+            form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
+                                     nutritionalvalues_data=nutritionalvalues_data)
+            return render(request, "update_product.html", {"form": form, "name": product_data["name"]})
+        else:
+            if up_product and up_technology and up_nutritionalvalues:
+                messages.success(request, "Produkt został pomyślnie zmodyfikowany.")
+                transaction.savepoint_commit(save_point)
+                return redirect('home')
+            else:
+                messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
+                form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
+                                         nutritionalvalues_data=nutritionalvalues_data)
+                transaction.savepoint_rollback(save_point)
+                return render(request, "update_product.html", {"form": form, "name": product_data["name"]})
+
+    else:
+        form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
+                                 nutritionalvalues_data=nutritionalvalues_data)
+        transaction.savepoint_rollback(save_point)
+        return render(request, "update_product.html",  {"form": form, "name": product_data["name"]})
+
+
+@login_required
+def select_product_for_update(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
+    if request.method == "POST":
+        product_id = request.POST.get("product")
+        return redirect('update_product', product_id=product_id)
+    else:
+        form = SelectProductForm()
+        return render(request, "select_product.html",  {"form": form})
+
+
+@login_required
+@transaction.atomic
+def delete_product(request):
+    save_point = transaction.savepoint()
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
+    if request.method == "POST":
+        product_id = request.POST.get("product")
+        try:
+            check = check_quantity(product_id)
+        except (Exception,):
+            check = False
+
+        if check:
+            try:
+                delete_status = delete_product_technology_nutritionalvalues(product_id)
+            except(Exception,):
+                delete_status = False
+
+            if delete_status:
+                transaction.savepoint_commit(save_point)
+                messages.success(request, "Pomyślnie usunięto produkt.")
+                return redirect('home')
+            else:
+                transaction.savepoint_rollback(save_point)
+                messages.error(request, "Coś poszło nie tak, spróbuj ponownie później.")
+                form = DeleteProductForm()
+                transaction.savepoint_rollback(save_point)
+                return render(request, "select_product.html", {"form": form})
+        else:
+            messages.error(request, "Możesz usunąć produkt, którego ilość wynosi 0.")
+            transaction.savepoint_rollback(save_point)
+            form = DeleteProductForm()
+            return render(request, "select_product.html", {"form": form})
+    else:
+        transaction.savepoint_rollback(save_point)
+        form = DeleteProductForm()
+        return render(request, "select_product.html",  {"form": form})
 

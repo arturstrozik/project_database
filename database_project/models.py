@@ -19,7 +19,7 @@ class Technology(models.Model):
     name = models.CharField(max_length=50)
     production_time_h = models.FloatField(validators=[MinValueValidator(0.0)])
     recipe = models.CharField(max_length=5000)
-    product_id = models.IntegerField()
+    product_id = models.IntegerField(unique=True)
 
 
 class Stock(models.Model):
