@@ -35,6 +35,27 @@ def new_order(request):
     form = NewOrderForm()
     form.fields["client_id"].initial = request.user.id
     form.fields["client_id"].disabled = True
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
+        )
+        product_list = cursor.fetchall()
+    product_tuple = ()
+    for row in product_list:
+        product_tuple = product_tuple + (
+            (
+                str(row[0]),
+                str(row[0])
+                + " "
+                + str(row[1])
+                + "zł/"
+                + str(row[3])
+                + " dostępne: "
+                + str(row[2])
+                + str(row[3]),
+            ),
+        )
+    form.fields["product"].choices = tuple(product_tuple)
     if request.method == "POST":
         client_id = request.user.id
         with connection.cursor() as cursor:

@@ -25,27 +25,7 @@ class NewOrderForm(forms.Form):
     client_id = forms.IntegerField(label="Twoje ID", min_value=0)
     quantity = forms.FloatField(label="Podaj ilość", min_value=0)
 
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
-        )
-        product_list = cursor.fetchall()
-    product_tuple = ()
-    for row in product_list:
-        product_tuple = product_tuple + (
-            (
-                str(row[0]),
-                str(row[0])
-                + " "
-                + str(row[1])
-                + "zł/"
-                + str(row[3])
-                + " dostępne: "
-                + str(row[2])
-                + str(row[3]),
-            ),
-        )
-    PRODUCT_CHOICE = tuple(product_tuple)
+    PRODUCT_CHOICE = ()
     product = forms.ChoiceField(
         choices=PRODUCT_CHOICE,
         label="Produkt",
