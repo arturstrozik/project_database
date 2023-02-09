@@ -82,7 +82,7 @@ def new_order(request):
                     "Oczekujące"
                 )
             )
-        messages.success("Zamówienie zostało złożone.")
+        messages.success(request, "Zamówienie zostało złożone.")
         return redirect("/")
     else:
         return render(request, "new_order.html", {"form": form})
