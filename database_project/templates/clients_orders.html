@@ -26,9 +26,7 @@
         {% csrf_token %}
         <table>
             <tr>
-                <th>ID zamówienia</th>
-                <th>ID klienta</th>
-                <th>ID produktu</th>
+                <th>Nazwa produktu</th>
                 <th>Ilość</th>
                 <th>Cena/jednostkę</th>
                 <th>Cena całkowita</th>
@@ -38,19 +36,12 @@
                 <th>Czy gotowe</th>
             </tr>
             {% for row in all %}
-                <tr {% if row.9 == True %}id="order_row"  style="display:none;"{% endif %}>
+                <tr {% if row|last == True %}id="order_row"  style="display:none;"{% endif %}>
                 {% for element in row %}
                     <td>
                         {{ element }}
                     </td>
                 {% endfor %}
-                <td>
-                     <form action="{% url 'order_handling' %}" method="get" class="mb-2">
-                        <button class="btn btn-secondary fs-5" type="submit" name="order_id" value="{{ row.0 }}">
-                            Zmień status
-                        </button>
-                    </form>
-                </td>
                 </tr>
             {% endfor %}
         </table>

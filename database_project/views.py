@@ -153,21 +153,35 @@ def stock(request):
 
 @login_required
 def orders(request):
-    if request.user.role != 3:
-        messages.error(request, "To może zrobić tylko pracownik.")
-        return redirect("/", messages)
-    all = ()
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status, is_done "
-            "FROM database_project_orders ORDER BY id"
-        )
-        for row in cursor.fetchall():
-            all = all + (row,)
-    context = {
-        "all": all,
-    }
-    return render(request, "orders.html", context)
+    if request.user.role == 3:
+        all = ()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status, is_done "
+                "FROM database_project_orders ORDER BY id"
+            )
+            for row in cursor.fetchall():
+                all = all + (row,)
+        context = {
+            "all": all,
+        }
+        return render(request, "orders.html", context)
+    if request.user.role == 1:
+        all = ()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT p.name, o.quantity, o.price, o.total_amount, o.delivery_method, o.dead_line, o.status, o.is_done "
+                "FROM database_project_orders o INNER JOIN database_project_products p ON o.pid=p.pid ORDER BY o.id"
+            )
+            for row in cursor.fetchall():
+                all = all + (row,)
+        context = {
+            "all": all,
+        }
+        return render(request, "clients_orders.html", context)
+    messages.error(request, "To może zrobić tylko pracownik.")
+    return redirect(request.META["HTTP_REFERER"], messages)
+
 
 
 @login_required
