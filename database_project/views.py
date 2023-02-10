@@ -100,7 +100,7 @@ def new_order(request):
                     delivery,
                     dead_line,
                     str(False),
-                    "Oczekujące"
+                    "Przyjęte"
                 )
             )
         messages.success(request, "Zamówienie zostało złożone.")
@@ -153,10 +153,13 @@ def stock(request):
 
 @login_required
 def orders(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect("/", messages)
     all = ()
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status "
+            "SELECT id, cid, pid, quantity, price, total_amount, delivery_method, dead_line, status, is_done "
             "FROM database_project_orders ORDER BY id"
         )
         for row in cursor.fetchall():
@@ -195,10 +198,11 @@ def order_handling(request):
     if request.method == "POST":
         status = request.POST.get("status")
         order_id = request.GET.get("order_id")
+        is_done = request.POST.get("is_done", False)
         if status is not None:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE database_project_orders set status=%s WHERE id=%s", [status, order_id]
+                    "UPDATE database_project_orders set status=%s, is_done=%s WHERE id=%s", [status, is_done, order_id]
                 )
             return redirect(orders)
     return render(request, "order_handling.html", {"form": form})

@@ -2,6 +2,26 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
+    <script>
+        function change_order_filter(){
+            document.querySelectorAll("#order_row").forEach(row => {
+                row.style["display"] = "";
+                })
+            document.getElementById("order_row").style = "display:yes;"
+            let check = document.getElementById("show_all_orders");
+            if (check["checked"] != true) {
+                document.querySelectorAll("#order_row").forEach(row => {
+                row.style["display"] = "None";
+                })
+            }
+        }
+    </script>
+    <div>
+        <label>
+            <input type="checkbox" id="show_all_orders" onclick="change_order_filter()"/>
+            Pokaż wszystkie zamówienia
+        </label>
+    </div>
     <div class="col-md-12 mt-5">
         {% csrf_token %}
         <table>
@@ -15,9 +35,10 @@
                 <th>Sposób dostawy</th>
                 <th>Deadline</th>
                 <th>Status</th>
+                <th>Czy gotowe</th>
             </tr>
             {% for row in all %}
-                <tr>
+                <tr {% if row.9 == True %}id="order_row"  style="display:none;"{% endif %}>
                 {% for element in row %}
                     <td>
                         {{ element }}

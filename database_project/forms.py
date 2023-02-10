@@ -133,7 +133,22 @@ class OrderHandling(forms.Form):
 
     id = forms.IntegerField(label="ID zamówienia")
     client_data = forms.CharField(label="Klient")
-    status = forms.CharField(max_length=40, label="Status zamówenia")
+    STATUS = (
+        ("Przyjęte", "Przyjęte"),
+        ("Oczekujące", "Oczekujące"),
+        ("W produkcji", "W produkcji"),
+        ("Przygotowywanie do wysyłki", "Przygotowywanie do wysyłki"),
+        ("Gotowe do wysyłki", "Gotowe do wysyłki"),
+        ("Wysłane", "Wysłane"),
+    )
+    status = forms.ChoiceField(
+        choices=STATUS,
+        initial="Przyjęte",
+        label="Status zamówenia",
+    )
+    is_done = forms.BooleanField(
+        label="Produkt jest już gotowy", required=False
+    )
 
 
 class UpdateProductForm(forms.Form):
