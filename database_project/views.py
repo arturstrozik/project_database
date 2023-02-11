@@ -511,3 +511,49 @@ def delete_product(request):
         form = DeleteProductForm()
         return render(request, "select_product.html",  {"form": form})
 
+
+@login_required
+def order_material(request):
+    if request.user.role != 3:
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
+    form = ChoseRawMaterialToOrder()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
+        )
+        raw_material_list = cursor.fetchall()
+    raw_material_tuple = ()
+    for row in raw_material_list:
+        raw_material_tuple = raw_material_tuple + (
+            (
+                str(row[0]),
+                str(row[0])
+                + " "
+                + str(row[1])
+                + " dostępne: "
+                + str(row[2])
+                + str(row[3]),
+            ),
+        )
+    form.fields["raw_material"].choices = tuple(raw_material_tuple)
+    delivers = None
+    if request.method == "POST":
+        rmid = request.POST.get("raw_material")
+        form.fields["raw_material"].initial = rmid
+        delivers = ()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name, nip, contact, bank_account, sid_id FROM database_project_suppliers "
+                "INNER JOIN database_project_deliverdeclaration ON sid=sid_id WHERE rmid=%s",
+                [rmid]
+            )
+            for row in cursor.fetchall():
+                delivers = delivers + (row,)
+    context = {
+        "form": form,
+        "delivers": delivers,
+    }
+    return render(request, "raw_material_delivers.html", context)
+
+

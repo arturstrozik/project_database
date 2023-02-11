@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="col-md-auto mt-5" style="display: inline-block; vertical-align: top">
+        <form method="post" class="my-class">
+            {% csrf_token %}
+            {% crispy form %}
+        </form>
+    </div>
+    {% if delivers != " " %}
+    <div class="col-md-12 mt-5">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>Dostawca</th>
+                <th>NIP</th>
+                <th>Kontakt</th>
+                <th>Nr konta</th>
+                <th>ID dostawcy</th>
+            </tr>
+            {% for row in delivers %}
+                <tr>
+                {% for element in row %}
+                    <td>
+                        {{ element }}
+                    </td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}

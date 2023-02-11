@@ -55,7 +55,7 @@ class RawMaterials(models.Model):
 class Suppliers(models.Model):
     sid = models.ForeignKey("User", on_delete=models.CASCADE)
     name = models.CharField(max_length=50, unique=True)
-    nip = models.IntegerField(unique=True)
+    nip = models.CharField(max_length=15, unique=True)
     contact = models.CharField(max_length=12)
     bank_account = models.IntegerField()
 

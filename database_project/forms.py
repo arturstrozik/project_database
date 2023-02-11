@@ -248,3 +248,14 @@ class DeleteProductForm(forms.Form):
     product = forms.ChoiceField(
         label="Wybierz produkt",
     )
+
+
+class ChoseRawMaterialToOrder(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_action = reverse("order_material")
+        self.helper.form_method = "POST"
+        self.helper.add_input(Submit("submit", "Wyszukaj dostawców"))
+
+    raw_material = forms.ChoiceField(label="Wybierz materiał")
