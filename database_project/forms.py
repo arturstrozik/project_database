@@ -258,4 +258,5 @@ class ChoseRawMaterialToOrder(forms.Form):
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Wyszukaj dostawców"))
 
-    raw_material = forms.ChoiceField(label="Wybierz materiał")
+    raw_material = forms.ChoiceField(label="Wybierz materiał",
+                                     widget=forms.Select(attrs={'onchange': 'submit.click();'}))
