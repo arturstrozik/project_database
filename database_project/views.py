@@ -121,14 +121,14 @@ def new_order(request):
 def stock(request):
     all = ()
     with connection.cursor() as cursor:
-        if request.user.role == 1:
+        if check_users_role(request.user.id, 1):
             cursor.execute(
                 "(SELECT name, sum(quantity) "
                 "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
                 "GROUP BY name) "
                 "ORDER BY name"
             )
-        elif request.user.role == 2:
+        elif check_users_role(request.user.id, 2):
             cursor.execute(
                 "(SELECT is_product, name, sum(quantity) "
                 "FROM database_project_stock INNER JOIN database_project_products ON item_id=pid WHERE is_product=True "
@@ -139,7 +139,7 @@ def stock(request):
                 "GROUP BY name, is_product) "
                 "ORDER BY name"
             )
-        elif request.user.role == 3:
+        elif check_users_role(request.user.id, 3):
             cursor.execute(
                 "(SELECT poss, is_product, item_id, name, quantity, placement_time, placer, expiration_date "
                 "FROM database_project_stock LEFT JOIN database_project_products ON item_id=pid WHERE is_product=True "
@@ -150,7 +150,7 @@ def stock(request):
             )
         else:
             messages.error(request, "Nie masz dostępu do magazynu. Skontaktuj się z supportem lub administratorem.")
-            return render(request, "/", messages)
+            return redirect("/", messages)
         for row in cursor.fetchall():
             all = all + (row,)
     context = {
@@ -161,7 +161,7 @@ def stock(request):
 
 @login_required
 def orders(request):
-    if request.user.role == 3:
+    if check_users_role(request.user.id, 3):
         all = ()
         with connection.cursor() as cursor:
             cursor.execute(
@@ -174,7 +174,7 @@ def orders(request):
             "all": all,
         }
         return render(request, "orders.html", context)
-    if request.user.role == 1:
+    if check_users_role(request.user.id, 1):
         all = ()
         with connection.cursor() as cursor:
             cursor.execute(
@@ -194,7 +194,7 @@ def orders(request):
 
 @login_required
 def order_handling(request):
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect("/", messages)
     form = OrderHandling()
@@ -262,7 +262,7 @@ def logout_user(request):
 
 @login_required
 def change_stock(request):
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
@@ -304,7 +304,7 @@ def change_stock(request):
 @transaction.atomic
 def add_product(request):
     save_point = transaction.savepoint()
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
@@ -350,7 +350,7 @@ def add_product(request):
 
 @login_required
 def add_raw_material(request):
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
@@ -374,7 +374,7 @@ def add_raw_material(request):
 @login_required
 def delivery_declaration(request):
     # only for delivers
-    if request.user.role != 2:
+    if not check_users_role(request.user.id, 2):
         messages.error(request, "To może zrobić tylko dostawca.")
         return redirect("/", messages)
     if request.method == "POST":
@@ -404,7 +404,7 @@ def delivery_declaration(request):
 @transaction.atomic
 def update_product(request, product_id=0):
     save_point = transaction.savepoint()
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
 
@@ -468,7 +468,7 @@ def update_product(request, product_id=0):
 
 @login_required
 def select_product_for_update(request):
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
@@ -483,7 +483,7 @@ def select_product_for_update(request):
 @transaction.atomic
 def delete_product(request):
     save_point = transaction.savepoint()
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     if request.method == "POST":
@@ -522,7 +522,7 @@ def delete_product(request):
 
 @login_required
 def order_material(request):
-    if request.user.role != 3:
+    if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChoseRawMaterialToOrder()

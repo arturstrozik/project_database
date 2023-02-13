@@ -512,6 +512,22 @@ def delete_product_technology_nutritionalvalues(product_id: int):
             return False
 
 
+def check_users_role(user_id: int, expected_value: int):
+    with connection.cursor() as cursor:
+        user_role_sql = (
+            "SELECT role FROM database_project_user WHERE id = %s"
+        )
+        try:
+            cursor.execute(user_role_sql, [user_id])
+            user_role = cursor.fetchone()
+            if user_role[0] == expected_value:
+                return True
+            else:
+                return False
+        except (Exception,) as e:
+            return False
+
+
 def get_estimated_time():
     with connection.cursor() as cursor:
         number_of_orders_sql = (
