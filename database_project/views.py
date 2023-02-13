@@ -103,7 +103,15 @@ def new_order(request):
                     "Przyjęte"
                 )
             )
+        try:
+            estimated_time = get_estimated_time()
+        except(Exception,):
+            estimated_time = None
         messages.success(request, "Zamówienie zostało złożone.")
+        if estimated_time is not None:
+            messages.success(request, "Zamówienie zostanie zrealizowane za {} roboczogodzin.".format(estimated_time))
+        else:
+            messages.success(request, "Wkrótce rozpoczniemy realizację twojego zamówienia.")
         return redirect("/")
     else:
         return render(request, "new_order.html", {"form": form})

@@ -510,3 +510,37 @@ def delete_product_technology_nutritionalvalues(product_id: int):
             return True
         except (Exception,):
             return False
+
+
+def get_estimated_time():
+    with connection.cursor() as cursor:
+        number_of_orders_sql = (
+            "SELECT count(*) FROM database_project_orders WHERE is_done = FALSE "
+        )
+
+        cursor.execute(number_of_orders_sql)
+        number_of_orders = cursor.fetchone()
+        try:
+            number_of_orders = int(number_of_orders[0])
+        except(Exception,):
+            return None
+
+        if number_of_orders == 0:
+            return 0
+        elif number_of_orders != 0 and number_of_orders is not None:
+            estimated_time_sql = (
+                "SELECT SUM(quan.quantity * tim.production_time_h) FROM "
+                "(SELECT quantity, pid FROM database_project_orders WHERE is_done = False) AS quan "
+                "INNER JOIN (SELECT production_time_h, product_id FROM database_project_technology "
+                "WHERE product_id in (SELECT pid FROM database_project_orders WHERE is_done = False)) "
+                "AS tim ON quan.pid = tim.product_id;"
+            )
+            cursor.execute(estimated_time_sql)
+            estimated_time = cursor.fetchone()
+            try:
+                estimated_time = float(estimated_time[0])
+            except(Exception,):
+                estimated_time = None
+            return estimated_time
+        else:
+            return None
