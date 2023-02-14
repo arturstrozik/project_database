@@ -35,6 +35,8 @@ def home(request):
 def new_order(request):
     if request.method == "POST":
         form = NewOrderForm(request.POST)
+        form.fields["client_id"].initial = request.user.id
+        form.fields["client_id"].disabled = True
         if not form.is_valid():
             print(form.errors)
             messages.error(request, "W formularzu są błędne dane.")
