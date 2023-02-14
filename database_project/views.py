@@ -32,31 +32,8 @@ def home(request):
 
 @login_required()
 def new_order(request):
-    form = NewOrderForm()
-    form.fields["client_id"].initial = request.user.id
-    form.fields["client_id"].disabled = True
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
-        )
-        product_list = cursor.fetchall()
-    product_tuple = ()
-    for row in product_list:
-        product_tuple = product_tuple + (
-            (
-                str(row[0]),
-                str(row[0])
-                + " "
-                + str(row[1])
-                + "zł/"
-                + str(row[3])
-                + " dostępne: "
-                + str(row[2])
-                + str(row[3]),
-            ),
-        )
-    form.fields["product"].choices = tuple(product_tuple)
     if request.method == "POST":
+        form = NewOrderForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -117,6 +94,30 @@ def new_order(request):
             messages.success(request, "Wkrótce rozpoczniemy realizację twojego zamówienia.")
         return redirect("/")
     else:
+        form = NewOrderForm()
+        form.fields["client_id"].initial = request.user.id
+        form.fields["client_id"].disabled = True
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
+            )
+            product_list = cursor.fetchall()
+        product_tuple = ()
+        for row in product_list:
+            product_tuple = product_tuple + (
+                (
+                    str(row[0]),
+                    str(row[0])
+                    + " "
+                    + str(row[1])
+                    + "zł/"
+                    + str(row[3])
+                    + " dostępne: "
+                    + str(row[2])
+                    + str(row[3]),
+                ),
+            )
+        form.fields["product"].choices = tuple(product_tuple)
         return render(request, "new_order.html", {"form": form})
 
 
@@ -195,7 +196,6 @@ def orders(request):
     return redirect(request.META["HTTP_REFERER"], messages)
 
 
-
 @login_required
 def order_handling(request):
     if not check_users_role(request.user.id, 3):
@@ -203,9 +203,6 @@ def order_handling(request):
         return redirect("/", messages)
     form = OrderHandling()
     if request.method == "GET":
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
         order_id = request.GET.get("order_id")
         with connection.cursor() as cursor:
             cursor.execute(
@@ -225,9 +222,6 @@ def order_handling(request):
                 messages.error(request, "Błędny formularz.")
                 return redirect("/", messages)
     if request.method == "POST":
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
         status = request.POST.get("status")
         order_id = request.GET.get("order_id")
         is_done = request.POST.get("is_done", False)
@@ -277,6 +271,7 @@ def change_stock(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
     if request.method == "GET":
+        form = ChangeStockForm(request.GET)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -286,6 +281,7 @@ def change_stock(request):
         except KeyError:
             pass
     if request.method == "POST":
+        form = ChangeStockForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -323,8 +319,8 @@ def add_product(request):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
-    form = AddProductForm()
     if request.method == "POST":
+        form = AddProductForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -364,6 +360,7 @@ def add_product(request):
                 return render(request, "add_product.html", {"form": form})
     else:
         transaction.savepoint_rollback(save_point)
+        form = AddProductForm()
         return render(request, "add_product.html",  {"form": form})
 
 
@@ -374,6 +371,7 @@ def add_raw_material(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     form = AddRawMaterial()
     if request.method == "POST":
+        form = AddRawMaterial(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -429,19 +427,16 @@ def update_product(request, product_id=0):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
-
     try:
         product_data = get_specific_products(product_id)
         technology_data = get_specific_technology(product_id)
         nutritionalvalues_data = get_specific_nutritionalvalues(product_id)
     except(Exception,):
         messages.error(request, "Wystąpił błąd. Spróbuj ponownie później.")
-        return redirect('home')
-
-    form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
-                             nutritionalvalues_data=nutritionalvalues_data)
+        return redirect('/home/')
 
     if request.method == "POST":
+        form = UpdateProductForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -486,6 +481,21 @@ def update_product(request, product_id=0):
 
     else:
         transaction.savepoint_rollback(save_point)
+        form = UpdateProductForm()
+        form.fields["name"].initial = product_data["name"]
+        form.fields["unit"].initial = product_data["unit"]
+        form.fields["expiration_date_in_days"].initial = product_data["expiration"]
+        form.fields["price"].initial = product_data["price"]
+        form.fields["technology_name"].initial = technology_data["name"]
+        form.fields["production_time_h"].initial = technology_data["time"]
+        form.fields["recipe"].initial = technology_data["recipe"]
+        form.fields["protein"].initial = nutritionalvalues_data["protein"]
+        form.fields["carbohydrate"].initial = nutritionalvalues_data["carbohydrate"]
+        form.fields["carbohydrate_of_witch_sugars"].initial = nutritionalvalues_data["carbohydrate_of_witch_sugars"]
+        form.fields["salt"].initial = nutritionalvalues_data["salt"]
+        form.fields["fat"].initial = nutritionalvalues_data["fat"]
+        form.fields["fat_of_witch_saturates"].initial = nutritionalvalues_data["fat_of_witch_saturates"]
+        form.fields["energy"].initial = nutritionalvalues_data["energy"]
         return render(request, "update_product.html",  {"form": form, "name": product_data["name"]})
 
 
@@ -496,6 +506,7 @@ def select_product_for_update(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     form = SelectProductForm()
     if request.method == "POST":
+        form = SelectProductForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -514,6 +525,7 @@ def delete_product(request):
     save_point = transaction.savepoint()
     form = DeleteProductForm()
     if request.method == "POST":
+        form = DeleteProductForm(request.POST)
         if not form.is_valid():
             messages.error(request, "W formularzu są błędne dane.")
             return redirect("/", messages)
@@ -551,10 +563,28 @@ def delete_product(request):
 
 @login_required
 def order_material(request):
+    form = ChoseRawMaterialToOrder()
+    delivers = None
+    if request.method == "POST":
+        form = ChoseRawMaterialToOrder(request.POST)
+        rmid = request.POST.get("raw_material")
+        form.fields["raw_material"].initial = rmid
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
+        delivers = ()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name, nip, contact, bank_account, sid_id FROM database_project_suppliers "
+                "INNER JOIN database_project_deliverdeclaration ON sid=sid_id WHERE rmid=%s",
+                [rmid]
+            )
+            for row in cursor.fetchall():
+                delivers = delivers + (row,)
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
-    form = ChoseRawMaterialToOrder()
+
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
@@ -574,22 +604,7 @@ def order_material(request):
             ),
         )
     form.fields["raw_material"].choices = tuple(raw_material_tuple)
-    delivers = None
-    if request.method == "POST":
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
-        rmid = request.POST.get("raw_material")
-        form.fields["raw_material"].initial = rmid
-        delivers = ()
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT name, nip, contact, bank_account, sid_id FROM database_project_suppliers "
-                "INNER JOIN database_project_deliverdeclaration ON sid=sid_id WHERE rmid=%s",
-                [rmid]
-            )
-            for row in cursor.fetchall():
-                delivers = delivers + (row,)
+
     context = {
         "form": form,
         "delivers": delivers,

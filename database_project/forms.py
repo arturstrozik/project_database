@@ -18,7 +18,7 @@ class NewOrderForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("new_order")
+        #self.helper.form_action = reverse("new_order")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Zamów"))
 
@@ -68,7 +68,7 @@ class ChangeStockForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("change_stock")
+        #self.helper.form_action = reverse("change_stock")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Potwierdź"))
 
@@ -91,7 +91,7 @@ class AddProductForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("add_product")
+        #self.helper.form_action = reverse("add_product")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Dodaj"))
 
@@ -115,7 +115,7 @@ class AddRawMaterial(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("add_material")
+        #self.helper.form_action = reverse("add_material")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Dodaj"))
 
@@ -127,7 +127,7 @@ class OrderHandling(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("order_handling")
+        #self.helper.form_action = reverse("order_handling")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Aktualizuj"))
 
@@ -152,24 +152,10 @@ class OrderHandling(forms.Form):
 
 
 class UpdateProductForm(forms.Form):
-    def __init__(self, product_data, technology_data, nutritionalvalues_data, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.fields["name"].initial = product_data["name"]
-        self.fields["unit"].initial = product_data["unit"]
-        self.fields["expiration_date_in_days"].initial = product_data["expiration"]
-        self.fields["price"].initial = product_data["price"]
-        self.fields["technology_name"].initial = technology_data["name"]
-        self.fields["production_time_h"].initial = technology_data["time"]
-        self.fields["recipe"].initial = technology_data["recipe"]
-        self.fields["protein"].initial = nutritionalvalues_data["protein"]
-        self.fields["carbohydrate"].initial = nutritionalvalues_data["carbohydrate"]
-        self.fields["carbohydrate_of_witch_sugars"].initial = nutritionalvalues_data["carbohydrate_of_witch_sugars"]
-        self.fields["salt"].initial = nutritionalvalues_data["salt"]
-        self.fields["fat"].initial = nutritionalvalues_data["fat"]
-        self.fields["fat_of_witch_saturates"].initial = nutritionalvalues_data["fat_of_witch_saturates"]
-        self.fields["energy"].initial = nutritionalvalues_data["energy"]
-        self.helper.form_action = reverse("update_product",  kwargs={'product_id': 0})
+        #self.helper.form_action = reverse("update_product", kwargs={'product_id': 1})
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Zmień"))
 
@@ -210,7 +196,7 @@ class SelectProductForm(forms.Form):
                 ),
             )
         self.fields["product"].choices = tuple(product_tuple)
-        self.helper.form_action = reverse("select_product_for_update")
+        #self.helper.form_action = reverse("select_product_for_update")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Przejdź dalej"))
 
@@ -241,7 +227,7 @@ class DeleteProductForm(forms.Form):
             )
 
         self.fields["product"].choices = tuple(product_tuple)
-        self.helper.form_action = reverse("delete_product")
+        #self.helper.form_action = reverse("delete_product")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Usuń"))
 
@@ -254,7 +240,7 @@ class ChoseRawMaterialToOrder(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_action = reverse("order_material")
+        #self.helper.form_action = reverse("order_material")
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Wyszukaj dostawców"))
 
