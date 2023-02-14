@@ -182,7 +182,8 @@ def orders(request):
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT p.name, o.quantity, o.price, o.total_amount, o.delivery_method, o.dead_line, o.status, o.is_done "
-                "FROM database_project_orders o INNER JOIN database_project_products p ON o.pid=p.pid ORDER BY o.id"
+                "FROM database_project_orders o INNER JOIN database_project_products p ON o.pid=p.pid WHERE o.cid = %s ORDER BY o.id",
+                [request.user.id]
             )
             for row in cursor.fetchall():
                 all = all + (row,)
