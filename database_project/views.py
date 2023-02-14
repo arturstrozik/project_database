@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.contrib import messages
+from .additional_function import *
 from django.db import connection
 import datetime
 
@@ -34,9 +35,9 @@ def home(request):
 def new_order(request):
     if request.method == "POST":
         form = NewOrderForm(request.POST)
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
+        # if not form.is_valid():
+        #     messages.error(request, "W formularzu są błędne dane.")
+        #     return redirect("/", messages)
         client_id = request.user.id
         with connection.cursor() as cursor:
             cursor.execute(
@@ -272,9 +273,9 @@ def change_stock(request):
     form = ChangeStockForm()
     if request.method == "GET":
         form = ChangeStockForm(request.GET)
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
+        # if not form.is_valid():
+        #     messages.error(request, "W formularzu są błędne dane.")
+        #     return redirect("/", messages)
         try:
             form.fields["poss"].initial = request.GET["possition"]
             form.fields["poss"].disabled = True
@@ -282,9 +283,9 @@ def change_stock(request):
             pass
     if request.method == "POST":
         form = ChangeStockForm(request.POST)
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
+        # if not form.is_valid():
+        #     messages.error(request, "W formularzu są błędne dane.")
+        #     return redirect("/", messages)
         poss = request.GET.get("possition")
         item_id = request.POST.get("item_id")
         quantity = request.POST.get("quantity")
@@ -464,8 +465,7 @@ def update_product(request, product_id=0):
                                                                 float(energy), int(product_id))
         except (Exception,):
             messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
-            form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
-                                     nutritionalvalues_data=nutritionalvalues_data)
+            form = clear_update_form(product_data, technology_data, nutritionalvalues_data)
             return render(request, "update_product.html", {"form": form, "name": product_data["name"]})
         else:
             if up_product and up_technology and up_nutritionalvalues:
@@ -474,28 +474,13 @@ def update_product(request, product_id=0):
                 return redirect('home')
             else:
                 messages.error(request, "Coś poszło nie tak. Spróbuj ponownie.")
-                form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
-                                         nutritionalvalues_data=nutritionalvalues_data)
+                form = clear_update_form(product_data, technology_data, nutritionalvalues_data)
                 transaction.savepoint_rollback(save_point)
                 return render(request, "update_product.html", {"form": form, "name": product_data["name"]})
 
     else:
         transaction.savepoint_rollback(save_point)
-        form = UpdateProductForm()
-        form.fields["name"].initial = product_data["name"]
-        form.fields["unit"].initial = product_data["unit"]
-        form.fields["expiration_date_in_days"].initial = product_data["expiration"]
-        form.fields["price"].initial = product_data["price"]
-        form.fields["technology_name"].initial = technology_data["name"]
-        form.fields["production_time_h"].initial = technology_data["time"]
-        form.fields["recipe"].initial = technology_data["recipe"]
-        form.fields["protein"].initial = nutritionalvalues_data["protein"]
-        form.fields["carbohydrate"].initial = nutritionalvalues_data["carbohydrate"]
-        form.fields["carbohydrate_of_witch_sugars"].initial = nutritionalvalues_data["carbohydrate_of_witch_sugars"]
-        form.fields["salt"].initial = nutritionalvalues_data["salt"]
-        form.fields["fat"].initial = nutritionalvalues_data["fat"]
-        form.fields["fat_of_witch_saturates"].initial = nutritionalvalues_data["fat_of_witch_saturates"]
-        form.fields["energy"].initial = nutritionalvalues_data["energy"]
+        form = clear_update_form(product_data, technology_data, nutritionalvalues_data)
         return render(request, "update_product.html",  {"form": form, "name": product_data["name"]})
 
 
@@ -569,9 +554,9 @@ def order_material(request):
         form = ChoseRawMaterialToOrder(request.POST)
         rmid = request.POST.get("raw_material")
         form.fields["raw_material"].initial = rmid
-        if not form.is_valid():
-            messages.error(request, "W formularzu są błędne dane.")
-            return redirect("/", messages)
+        # if not form.is_valid():
+        #     messages.error(request, "W formularzu są błędne dane.")
+        #     return redirect("/", messages)
         delivers = ()
         with connection.cursor() as cursor:
             cursor.execute(

@@ -24,12 +24,7 @@ class NewOrderForm(forms.Form):
 
     client_id = forms.IntegerField(label="Twoje ID", min_value=0)
     quantity = forms.FloatField(label="Podaj ilość", min_value=0)
-
-    PRODUCT_CHOICE = ()
-    product = forms.ChoiceField(
-        choices=PRODUCT_CHOICE,
-        label="Produkt",
-    )
+    product = forms.ChoiceField(label="Produkt")
 
     DELIVERY_CHOICE = (
         ("DHL", "DHL"),
@@ -97,7 +92,7 @@ class AddProductForm(forms.Form):
 
     name = forms.CharField(label="Nazwa produktu", max_length=30)
     unit = forms.CharField(label="Jednostka", max_length=5)
-    expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
+    expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)", validators=[MinValueValidator(0)])
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
     technology_name = forms.CharField(label="Nazwa technologi", max_length=50)
     production_time_h = forms.FloatField(label="Czas produkcji", validators=[MinValueValidator(0.0)])
@@ -161,7 +156,7 @@ class UpdateProductForm(forms.Form):
 
     name = forms.CharField(label="Nazwa produktu", max_length=30)
     unit = forms.CharField(label="Jednostka", max_length=5)
-    expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)")
+    expiration_date_in_days = forms.IntegerField(label="Okres trwałości (w dniach)", validators=[MinValueValidator(0)])
     price = forms.FloatField(label="Cena", validators=[MinValueValidator(0.0)])
     technology_name = forms.CharField(label="Nazwa technologi", max_length=50)
     production_time_h = forms.FloatField(label="Czas produkcji", validators=[MinValueValidator(0.0)])
