@@ -262,7 +262,7 @@ class ChoseRawMaterialToOrder(forms.Form):
                 "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
             )
             raw_material_list = cursor.fetchall()
-        raw_material_tuple = ()
+        raw_material_tuple = (("0", "Wybierz materiał"), )
         for row in raw_material_list:
             raw_material_tuple = raw_material_tuple + (
                 (

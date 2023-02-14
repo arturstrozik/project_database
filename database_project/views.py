@@ -255,7 +255,7 @@ def change_stock(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
     if request.method == "GET":
-        form = ChangeStockForm(request.GET)
+        #form = ChangeStockForm(request.GET)
         # if not form.is_valid():
         #     messages.error(request, "W formularzu są błędne dane.")
         #     return redirect("/", messages)
@@ -265,7 +265,7 @@ def change_stock(request):
         except KeyError:
             pass
     if request.method == "POST":
-        form = ChangeStockForm(request.POST)
+        # form = ChangeStockForm(request.POST)
         # if not form.is_valid():
         #     messages.error(request, "W formularzu są błędne dane.")
         #     return redirect("/", messages)
@@ -277,9 +277,14 @@ def change_stock(request):
         expiration_date = request.POST.get("expiration_date")
         is_product = request.POST.get("is_product", False)
 
+        if float(quantity) < 0:
+            messages.error(request, "Błąd w ilości produktu.")
+            return redirect("/", messages)
+
         with connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE database_project_stock set item_id=%s, quantity=%s, placement_time=%s, placer=%s, expiration_date=%s, is_product=%s where poss=%s",
+                "UPDATE database_project_stock set item_id=%s, quantity=%s, placement_time=%s, placer=%s, "
+                "expiration_date=%s, is_product=%s where poss=%s and %s in (select pid from database_project_products)",
                 [
                     item_id,
                     quantity,
@@ -288,6 +293,7 @@ def change_stock(request):
                     expiration_date,
                     str(is_product),
                     poss,
+                    item_id,
                 ],
             )
         return redirect("/stock/")
