@@ -57,6 +57,9 @@ def new_order(request):
         )
     form.fields["product"].choices = tuple(product_tuple)
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         client_id = request.user.id
         with connection.cursor() as cursor:
             cursor.execute(
@@ -199,6 +202,9 @@ def order_handling(request):
         return redirect("/", messages)
     form = OrderHandling()
     if request.method == "GET":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         order_id = request.GET.get("order_id")
         with connection.cursor() as cursor:
             cursor.execute(
@@ -218,6 +224,9 @@ def order_handling(request):
                 messages.error(request, "Błędny formularz.")
                 return redirect("/", messages)
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         status = request.POST.get("status")
         order_id = request.GET.get("order_id")
         is_done = request.POST.get("is_done", False)
@@ -233,19 +242,19 @@ def order_handling(request):
 def register(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
-        if form.is_valid():
-            done = insert_new_user(make_password(form.cleaned_data.get("password1")),
-                                   form.cleaned_data.get("username"),
-                                   form.cleaned_data.get("first_name"),
-                                   form.cleaned_data.get("last_name"),
-                                   form.cleaned_data.get("email"))
+        if not form.is_valid():
+            form = form
+            return render(request, "registration/register.html", {"form": form})
 
-            if done:
-                messages.success(request, "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować")
-                return redirect('home')
-            else:
-                form = form
-                return render(request, "registration/register.html", {"form": form})
+        done = insert_new_user(make_password(form.cleaned_data.get("password1")),
+                               form.cleaned_data.get("username"),
+                               form.cleaned_data.get("first_name"),
+                               form.cleaned_data.get("last_name"),
+                               form.cleaned_data.get("email"))
+
+        if done:
+            messages.success(request, "Rejestracja zakończyła się pomyślnie. Teraz można się zalogować")
+            return redirect('home')
         else:
             form = form
             return render(request, "registration/register.html", {"form": form})
@@ -267,12 +276,18 @@ def change_stock(request):
         return redirect(request.META["HTTP_REFERER"], messages)
     form = ChangeStockForm()
     if request.method == "GET":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         try:
             form.fields["poss"].initial = request.GET["possition"]
             form.fields["poss"].disabled = True
         except KeyError:
             pass
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         poss = request.GET.get("possition")
         item_id = request.POST.get("item_id")
         quantity = request.POST.get("quantity")
@@ -307,7 +322,11 @@ def add_product(request):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
+    form = AddProductForm()
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         name = request.POST.get("name")
         unit = request.POST.get("unit")
         expiration_date_in_days = request.POST.get("expiration_date_in_days")
@@ -343,7 +362,6 @@ def add_product(request):
                 transaction.savepoint_rollback(save_point)
                 return render(request, "add_product.html", {"form": form})
     else:
-        form = AddProductForm()
         transaction.savepoint_rollback(save_point)
         return render(request, "add_product.html",  {"form": form})
 
@@ -353,7 +371,11 @@ def add_raw_material(request):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
+    form = AddRawMaterial()
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         name = request.POST.get("name")
         unit = request.POST.get("unit")
         quantity = 0
@@ -367,7 +389,6 @@ def add_raw_material(request):
                            "VALUES (%s, %s, %s) ", [name, str(quantity), unit])
             messages.success(request, "Materiał dodany do bazy danych.")
             return redirect(request.META["HTTP_REFERER"], messages)
-    form = AddRawMaterial()
     return render(request, "add_material.html", {"form": form})
 
 
@@ -416,10 +437,13 @@ def update_product(request, product_id=0):
         messages.error(request, "Wystąpił błąd. Spróbuj ponownie później.")
         return redirect('home')
 
-    print(product_data)
-    print(technology_data)
-    print(nutritionalvalues_data)
+    form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
+                             nutritionalvalues_data=nutritionalvalues_data)
+
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         name = request.POST.get("name")
         unit = request.POST.get("unit")
         expiration_date_in_days = request.POST.get("expiration_date_in_days")
@@ -460,8 +484,6 @@ def update_product(request, product_id=0):
                 return render(request, "update_product.html", {"form": form, "name": product_data["name"]})
 
     else:
-        form = UpdateProductForm(product_data=product_data, technology_data=technology_data,
-                                 nutritionalvalues_data=nutritionalvalues_data)
         transaction.savepoint_rollback(save_point)
         return render(request, "update_product.html",  {"form": form, "name": product_data["name"]})
 
@@ -471,22 +493,29 @@ def select_product_for_update(request):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
+    form = SelectProductForm()
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         product_id = request.POST.get("product")
         return redirect('update_product', product_id=product_id)
     else:
-        form = SelectProductForm()
         return render(request, "select_product.html",  {"form": form})
 
 
 @login_required
 @transaction.atomic
 def delete_product(request):
-    save_point = transaction.savepoint()
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
+    save_point = transaction.savepoint()
+    form = DeleteProductForm()
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         product_id = request.POST.get("product")
         try:
             check = check_quantity(product_id)
@@ -516,7 +545,6 @@ def delete_product(request):
             return render(request, "select_product.html", {"form": form})
     else:
         transaction.savepoint_rollback(save_point)
-        form = DeleteProductForm()
         return render(request, "select_product.html",  {"form": form})
 
 
@@ -547,6 +575,9 @@ def order_material(request):
     form.fields["raw_material"].choices = tuple(raw_material_tuple)
     delivers = None
     if request.method == "POST":
+        if not form.is_valid():
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         rmid = request.POST.get("raw_material")
         form.fields["raw_material"].initial = rmid
         delivers = ()
