@@ -19,6 +19,27 @@ class NewOrderForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         #self.helper.form_action = reverse("new_order")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
+            )
+            product_list = cursor.fetchall()
+        product_tuple = ()
+        for row in product_list:
+            product_tuple = product_tuple + (
+                (
+                    str(row[0]),
+                    str(row[0])
+                    + " "
+                    + str(row[1])
+                    + "zł/"
+                    + str(row[3])
+                    + " dostępne: "
+                    + str(row[2])
+                    + str(row[3]),
+                ),
+            )
+        self.fields["product"].choices = tuple(product_tuple)
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Zamów"))
 
@@ -236,6 +257,25 @@ class ChoseRawMaterialToOrder(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         #self.helper.form_action = reverse("order_material")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
+            )
+            raw_material_list = cursor.fetchall()
+        raw_material_tuple = ()
+        for row in raw_material_list:
+            raw_material_tuple = raw_material_tuple + (
+                (
+                    str(row[0]),
+                    str(row[0])
+                    + " "
+                    + str(row[1])
+                    + " dostępne: "
+                    + str(row[2])
+                    + str(row[3]),
+                ),
+            )
+        self.fields["raw_material"].choices = tuple(raw_material_tuple)
         self.helper.form_method = "POST"
         self.helper.add_input(Submit("submit", "Wyszukaj dostawców"))
 

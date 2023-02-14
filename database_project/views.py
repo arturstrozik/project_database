@@ -35,9 +35,10 @@ def home(request):
 def new_order(request):
     if request.method == "POST":
         form = NewOrderForm(request.POST)
-        # if not form.is_valid():
-        #     messages.error(request, "W formularzu są błędne dane.")
-        #     return redirect("/", messages)
+        if not form.is_valid():
+            print(form.errors)
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         client_id = request.user.id
         with connection.cursor() as cursor:
             cursor.execute(
@@ -98,27 +99,7 @@ def new_order(request):
         form = NewOrderForm()
         form.fields["client_id"].initial = request.user.id
         form.fields["client_id"].disabled = True
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT name, price, quantity_in_stock, unit FROM database_project_products"
-            )
-            product_list = cursor.fetchall()
-        product_tuple = ()
-        for row in product_list:
-            product_tuple = product_tuple + (
-                (
-                    str(row[0]),
-                    str(row[0])
-                    + " "
-                    + str(row[1])
-                    + "zł/"
-                    + str(row[3])
-                    + " dostępne: "
-                    + str(row[2])
-                    + str(row[3]),
-                ),
-            )
-        form.fields["product"].choices = tuple(product_tuple)
+
         return render(request, "new_order.html", {"form": form})
 
 
@@ -554,9 +535,10 @@ def order_material(request):
         form = ChoseRawMaterialToOrder(request.POST)
         rmid = request.POST.get("raw_material")
         form.fields["raw_material"].initial = rmid
-        # if not form.is_valid():
-        #     messages.error(request, "W formularzu są błędne dane.")
-        #     return redirect("/", messages)
+        if not form.is_valid():
+            print(form.errors)
+            messages.error(request, "W formularzu są błędne dane.")
+            return redirect("/", messages)
         delivers = ()
         with connection.cursor() as cursor:
             cursor.execute(
@@ -569,27 +551,6 @@ def order_material(request):
     if not check_users_role(request.user.id, 3):
         messages.error(request, "To może zrobić tylko pracownik.")
         return redirect(request.META["HTTP_REFERER"], messages)
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
-        )
-        raw_material_list = cursor.fetchall()
-    raw_material_tuple = ()
-    for row in raw_material_list:
-        raw_material_tuple = raw_material_tuple + (
-            (
-                str(row[0]),
-                str(row[0])
-                + " "
-                + str(row[1])
-                + " dostępne: "
-                + str(row[2])
-                + str(row[3]),
-            ),
-        )
-    form.fields["raw_material"].choices = tuple(raw_material_tuple)
-
     context = {
         "form": form,
         "delivers": delivers,
