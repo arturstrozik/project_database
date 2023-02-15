@@ -259,7 +259,7 @@ class ChoseRawMaterialToOrder(forms.Form):
         #self.helper.form_action = reverse("order_material")
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials"
+                "SELECT rmid, name, quantity_in_stock, unit FROM database_project_rawmaterials ORDER BY rmid"
             )
             raw_material_list = cursor.fetchall()
         raw_material_tuple = (("0", "Wybierz materiał"), )
