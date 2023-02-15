@@ -540,6 +540,9 @@ def delete_product(request):
 
 @login_required
 def order_material(request):
+    if not check_users_role(request.user.id, 3):
+        messages.error(request, "To może zrobić tylko pracownik.")
+        return redirect(request.META["HTTP_REFERER"], messages)
     form = ChoseRawMaterialToOrder()
     delivers = None
     if request.method == "POST":
@@ -559,9 +562,7 @@ def order_material(request):
             )
             for row in cursor.fetchall():
                 delivers = delivers + (row,)
-    if not check_users_role(request.user.id, 3):
-        messages.error(request, "To może zrobić tylko pracownik.")
-        return redirect(request.META["HTTP_REFERER"], messages)
+
     context = {
         "form": form,
         "delivers": delivers,
