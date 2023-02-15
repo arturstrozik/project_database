@@ -285,7 +285,7 @@ def change_stock(request):
             cursor.execute(
                 "UPDATE database_project_stock SET "
                 "item_id=%s, quantity=%s, placement_time=%s, placer=%s, expiration_date=%s, is_product=%s WHERE poss=%s "
-                "AND (%s in (select pid from database_project_products) or %s in (select rmid from database_project_rawmaterials))",
+                "AND (%s in (select pid from database_project_products) or %s in (select rmid from database_project_rawmaterials) or %s = 0)",
                 [
                     item_id,
                     quantity,
@@ -294,6 +294,7 @@ def change_stock(request):
                     expiration_date,
                     str(is_product),
                     poss,
+                    item_id,
                     item_id,
                     item_id,
                 ],
